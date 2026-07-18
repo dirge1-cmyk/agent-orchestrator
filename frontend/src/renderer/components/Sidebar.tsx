@@ -18,12 +18,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { UpdateStatus } from "../../main/update-settings";
-import {
-	sessionIsActive,
-	type WorkspaceSession,
-	type WorkspaceSummary,
-	workerSessions,
-} from "../types/workspace";
+import { sessionIsActive, type WorkspaceSession, type WorkspaceSummary, workerSessions } from "../types/workspace";
 import { getSessionDotView } from "../lib/session-presentation";
 import { aoBridge } from "../lib/bridge";
 import { workspaceQueryKey } from "../hooks/useWorkspaceQuery";
