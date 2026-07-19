@@ -100,6 +100,7 @@ function sessionPRFactToSummary(session: WorkspaceSession, pr: PullRequestFacts)
 			prUrl: pr.url,
 			conflictFiles: [],
 		},
+		stateChangedAt: pr.updatedAt,
 		updatedAt: pr.updatedAt,
 		observedAt: pr.updatedAt,
 		ciObservedAt: pr.updatedAt,

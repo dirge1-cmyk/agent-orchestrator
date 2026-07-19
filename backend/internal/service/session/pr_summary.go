@@ -13,23 +13,26 @@ import (
 
 // PRSummary is the user-facing SCM read model for one PR owned by a session.
 type PRSummary struct {
-	URL              string
-	HTMLURL          string
-	Number           int
-	Title            string
-	State            domain.PRState
-	Provider         string
-	Repo             string
-	Author           string
-	SourceBranch     string
-	TargetBranch     string
-	HeadSHA          string
-	Additions        int
-	Deletions        int
-	ChangedFiles     int
-	CI               PRCISummary
-	Review           PRReviewSummary
-	Mergeability     PRMergeabilitySummary
+	URL          string
+	HTMLURL      string
+	Number       int
+	Title        string
+	State        domain.PRState
+	Provider     string
+	Repo         string
+	Author       string
+	SourceBranch string
+	TargetBranch string
+	HeadSHA      string
+	Additions    int
+	Deletions    int
+	ChangedFiles int
+	CI           PRCISummary
+	Review       PRReviewSummary
+	Mergeability PRMergeabilitySummary
+	// StateChangedAt is when the current draft/open/merged/closed state became
+	// active. It is backend-selected from durable PR/provider facts.
+	StateChangedAt   time.Time
 	UpdatedAt        time.Time
 	ObservedAt       time.Time
 	CIObservedAt     time.Time
@@ -142,6 +145,7 @@ func summarizePR(pr domain.PullRequest, checks []domain.PullRequestCheck, review
 		CI:               summarizeCI(pr, checks),
 		Review:           summarizeReview(pr, comments, reviews),
 		Mergeability:     summarizeMergeability(pr, threads),
+		StateChangedAt:   summarizePRStateChangedAt(pr),
 		UpdatedAt:        pr.UpdatedAt,
 		ObservedAt:       pr.ObservedAt,
 		CIObservedAt:     pr.CIObservedAt,
@@ -170,6 +174,31 @@ func summarizeCI(pr domain.PullRequest, checks []domain.PullRequestCheck) PRCISu
 		})
 	}
 	return out
+}
+
+func summarizePRStateChangedAt(pr domain.PullRequest) time.Time {
+	if !pr.StateChangedAt.IsZero() {
+		return pr.StateChangedAt
+	}
+	switch pullRequestState(pr) {
+	case domain.PRStateMerged:
+		return firstNonZeroTime(pr.MergedAtProvider, pr.UpdatedAtProvider, pr.UpdatedAt)
+	case domain.PRStateClosed:
+		return firstNonZeroTime(pr.ClosedAtProvider, pr.UpdatedAtProvider, pr.UpdatedAt)
+	case domain.PRStateDraft, domain.PRStateOpen:
+		return firstNonZeroTime(pr.CreatedAtProvider, pr.UpdatedAtProvider, pr.UpdatedAt)
+	default:
+		return pr.UpdatedAt
+	}
+}
+
+func firstNonZeroTime(values ...time.Time) time.Time {
+	for _, v := range values {
+		if !v.IsZero() {
+			return v
+		}
+	}
+	return time.Time{}
 }
 
 func summarizeReview(pr domain.PullRequest, comments []domain.PullRequestComment, reviews []domain.PullRequestReview) PRReviewSummary {

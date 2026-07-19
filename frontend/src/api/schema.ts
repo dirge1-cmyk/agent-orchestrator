@@ -1067,6 +1067,8 @@ export interface components {
             sourceBranch: string;
             /** @enum {string} */
             state: "draft" | "open" | "merged" | "closed";
+            /** Format: date-time */
+            stateChangedAt?: string;
             targetBranch: string;
             title: string;
             /** Format: date-time */

@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { SessionInspector } from "./SessionInspector";
 import type { PRState, PullRequestFacts, WorkspaceSession } from "../types/workspace";
+import type { SessionPRSummary } from "../hooks/useSessionScmSummary";
 
 const { getMock, postMock } = vi.hoisted(() => ({
 	getMock: vi.fn(),
@@ -185,7 +186,7 @@ describe("SessionInspector PR section", () => {
 
 	it("links each PR to its url", () => {
 		renderWithQuery(<SessionInspector session={session([pr(41, "open"), pr(42, "draft")])} />);
-		const links = screen.getAllByRole("link", { name: /Open/ });
+		const links = prSection("Pull requests (2)").getAllByRole("link", { name: "Open" });
 		expect(links.map((a) => a.getAttribute("href"))).toEqual([
 			"https://example.com/pr/41",
 			"https://example.com/pr/42",
@@ -367,6 +368,65 @@ describe("SessionInspector Activity section", () => {
 		expect(within(activityRow).getByText("Changes Requested")).toBeInTheDocument();
 	});
 
+	it("links PR milestones to the backend PR URL and state timestamp", async () => {
+		const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString();
+		const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000).toISOString();
+		const summary = {
+			url: "https://api.github.com/repos/acme/repo/pulls/7",
+			htmlUrl: "https://github.com/acme/repo/pull/7",
+			number: 7,
+			title: "Ready for review",
+			state: "open",
+			provider: "github",
+			repo: "acme/repo",
+			author: "ada",
+			sourceBranch: "feat/ns",
+			targetBranch: "main",
+			headSha: "abc123",
+			additions: 4,
+			deletions: 1,
+			changedFiles: 2,
+			ci: { state: "passing", failingChecks: [] },
+			review: { decision: "none", hasUnresolvedHumanComments: false, unresolvedBy: [] },
+			mergeability: {
+				state: "mergeable",
+				reasons: [],
+				prUrl: "https://github.com/acme/repo/pull/7",
+				conflictFiles: [],
+			},
+			stateChangedAt: oneHourAgo,
+			updatedAt: fifteenMinutesAgo,
+			observedAt: fifteenMinutesAgo,
+			ciObservedAt: fifteenMinutesAgo,
+			reviewObservedAt: fifteenMinutesAgo,
+		} satisfies SessionPRSummary & { stateChangedAt: string };
+		getMock.mockImplementation(async (path: string) => {
+			if (path === "/api/v1/sessions/{sessionId}/pr") {
+				return { data: { sessionId: "sess-1", prs: [summary] }, error: undefined };
+			}
+			return { data: { reviewerHandleId: "", reviews: [] }, error: undefined };
+		});
+
+		renderWithQuery(
+			<SessionInspector
+				session={session([pr(7, "open")], {
+					status: "review_pending",
+					activity: { state: "idle", lastActivityAt: "2026-06-15T10:00:00Z" },
+				})}
+			/>,
+		);
+
+		await waitFor(() => {
+			expect(screen.getByRole("link", { name: "Opened PR #7" })).toHaveAttribute(
+				"href",
+				"https://github.com/acme/repo/pull/7",
+			);
+		});
+		const link = screen.getByRole("link", { name: "Opened PR #7" });
+		const row = link.closest("[data-testid='inspector-timeline-event']") as HTMLElement;
+		expect(within(row).getByText("1h ago")).toBeInTheDocument();
+	});
+
 	it("orders timeline milestones around the combined current state row", () => {
 		vi.useFakeTimers();
 		vi.setSystemTime(new Date("2026-06-15T12:00:00Z"));
@@ -388,11 +448,11 @@ describe("SessionInspector Activity section", () => {
 		);
 		expect(rows).toEqual([
 			"Created worktree & branch3h ago",
-			"Draft PR #42",
-			"Opened PR #41",
+			"Draft PR #4212h ago",
+			"Opened PR #4112h ago",
 			"Opened PR #40",
 			"Idle2h ago",
-			"Merged PR #40",
+			"Merged PR #4012h ago",
 			"Done5m ago",
 		]);
 	});

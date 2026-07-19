@@ -2820,6 +2820,9 @@ components:
           - merged
           - closed
           type: string
+        stateChangedAt:
+          format: date-time
+          type: string
         targetBranch:
           type: string
         title:
