@@ -5,6 +5,7 @@ import { Button } from "./ui/button";
 import { spawnOrchestrator } from "../lib/spawn-orchestrator";
 import { isOrchestratorSession } from "../types/workspace";
 import type { WorkspaceSession } from "../types/workspace";
+import { useTranslation } from "react-i18next";
 
 type RestoreUnavailableDialogProps = {
 	open: boolean;
@@ -17,6 +18,7 @@ export function RestoreUnavailableDialog({ open, session, onOpenChange, onRecrea
 	const [busy, setBusy] = useState(false);
 	const [error, setError] = useState<string | undefined>();
 	const orchestrator = isOrchestratorSession(session);
+	const { t } = useTranslation();
 
 	const recreate = async () => {
 		setBusy(true);
@@ -26,7 +28,7 @@ export function RestoreUnavailableDialog({ open, session, onOpenChange, onRecrea
 			onOpenChange(false);
 			onRecreated(id);
 		} catch (err) {
-			setError(err instanceof Error ? err.message : "Failed to create orchestrator");
+			setError(err instanceof Error ? err.message : t("board.restoreUnavailable.createFailed"));
 		} finally {
 			setBusy(false);
 		}
@@ -37,21 +39,21 @@ export function RestoreUnavailableDialog({ open, session, onOpenChange, onRecrea
 			<Dialog.Portal>
 				<Dialog.Overlay className="fixed inset-0 z-overlay bg-scrim" />
 				<Dialog.Content className="fixed left-1/2 top-1/2 z-overlay w-dialog-md -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface p-5 shadow-lg">
-					<Dialog.Title className="text-sm font-medium text-foreground">Session can no longer be restored</Dialog.Title>
+					<Dialog.Title className="text-sm font-medium text-foreground">{t("board.restoreUnavailable.title")}</Dialog.Title>
 					<Dialog.Description className="mt-2 text-control text-muted-foreground">
 						{orchestrator
-							? "This orchestrator has no saved agent session to resume. You can create a new orchestrator on the same branch; its committed work is preserved and the old worktree is cleaned."
-							: "This session has no saved agent session or prompt to resume from."}
+							? t("board.restoreUnavailable.orchestratorDescription")
+							: t("board.restoreUnavailable.sessionDescription")}
 					</Dialog.Description>
 					{error && <div className="mt-3 text-xs text-destructive">{error}</div>}
 					<div className="mt-4 flex justify-end gap-2">
 						<Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
-							{orchestrator ? "Cancel" : "Close"}
+							{orchestrator ? t("board.restoreUnavailable.cancel") : t("board.restoreUnavailable.close")}
 						</Button>
 						{orchestrator && (
 							<Button onClick={recreate} disabled={busy}>
 								{busy && <Loader2 className="mr-2 size-icon-base animate-spin" />}
-								Create new orchestrator
+								{t("board.restoreUnavailable.createOrchestrator")}
 							</Button>
 						)}
 					</div>

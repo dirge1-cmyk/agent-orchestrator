@@ -5,25 +5,28 @@ import { MigrationSection } from "./MigrationSection";
 import { UpdatesSection } from "./UpdatesSection";
 import { Button } from "./ui/button";
 
+import { useTranslation } from "react-i18next";
+
 // App-wide settings, shown from the sidebar when no project is selected. Each
 // section is a self-contained card: Updates (auto-update channel, #2207) and
 // Migration (re-run the legacy-AO import, #2205). Connect Mobile lives in the
 // sidebar Settings menu, not here.
 export function GlobalSettingsForm() {
 	const navigate = useNavigate();
+	const { t } = useTranslation();
 
 	return (
 		<div className="flex h-full min-h-0 flex-col bg-background text-foreground">
 			<DashboardSubhead
-				title="Global settings"
-				subtitle="Settings that apply across all projects"
+				title={t("settings.globalSettings.title")}
+				subtitle={t("settings.globalSettings.subtitle")}
 				actions={
 					<Button
 						variant="ghost"
 						size="icon-sm"
 						onClick={() => navigate({ to: "/" })}
-						title="Close settings"
-						aria-label="Close settings"
+						title={t("settings.globalSettings.close")}
+						aria-label={t("settings.globalSettings.close")}
 					>
 						<X className="size-icon-base" />
 					</Button>

@@ -14,7 +14,6 @@ import {
 	attentionZone,
 	boardAttentionZoneOrder,
 	getAttentionZoneViewForZone,
-	getSessionStatusView,
 	isSessionInIdleStack,
 	type AttentionZone,
 	type AttentionZoneView,
@@ -32,6 +31,8 @@ import { prBrowserUrl, sessionPRDisplaySummaries } from "../lib/pr-display";
 import { cn } from "../lib/utils";
 import { useUiStore } from "../stores/ui-store";
 import { RestoreUnavailableDialog } from "./RestoreUnavailableDialog";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 const isLinux =
 	typeof navigator !== "undefined" &&
@@ -48,6 +49,7 @@ type Column = AttentionZoneView;
 const COLUMNS: Column[] = boardAttentionZoneOrder.map((zone) => getAttentionZoneViewForZone(zone));
 
 export function SessionsBoard({ projectId }: SessionsBoardProps) {
+	const { t } = useTranslation();
 	const navigate = useNavigate();
 	const queryClient = useQueryClient();
 	const restoreSessionById = useRestoreSession();
@@ -177,7 +179,7 @@ export function SessionsBoard({ projectId }: SessionsBoardProps) {
 			// Never fail silently: the daemon's message (e.g. a worktree/branch
 			// conflict) is the only actionable signal the user gets.
 			console.error("Failed to spawn orchestrator:", err);
-			setSpawnError(err instanceof Error ? err.message : "Could not spawn orchestrator");
+			setSpawnError(err instanceof Error ? err.message : t("board.errors.spawnFailed"));
 		} finally {
 			setIsSpawning(false);
 		}
@@ -203,28 +205,28 @@ export function SessionsBoard({ projectId }: SessionsBoardProps) {
 				</TopbarKillError>
 			)}
 			<TopbarButton
-				aria-label="New task"
+				aria-label={t("board.actions.newTask")}
 				disabled={isProjectRestarting}
 				onClick={() => projectId && requestNewTask(projectId)}
 				variant="accent"
 			>
 				<Plus className="size-icon-md" aria-hidden="true" />
-				New task
+				{t("board.actions.newTask")}
 			</TopbarButton>
 			<TopbarButton
-				aria-label={orchestrator ? "Orchestrator" : "Spawn Orchestrator"}
+				aria-label={orchestrator ? t("board.actions.orchestrator") : t("board.actions.spawnOrchestrator")}
 				disabled={isSpawning || isProjectRestarting}
 				onClick={() => void openOrchestrator()}
 				variant="primary"
 			>
 				<OrchestratorIcon className="size-icon-md" aria-hidden="true" />
 				{isProjectRestarting
-					? "Restarting..."
+					? t("board.actions.restarting")
 					: isSpawning
-						? "Spawning..."
+						? t("board.actions.spawning")
 						: orchestrator
-							? "Orchestrator"
-							: "Spawn Orchestrator"}
+							? t("board.actions.orchestrator")
+							: t("board.actions.spawnOrchestrator")}
 			</TopbarButton>
 		</>
 	) : isLinux ? (
@@ -236,13 +238,7 @@ export function SessionsBoard({ projectId }: SessionsBoardProps) {
 			{/* The first-launch welcome carries its own orientation; a "Board"
 			    header above it would describe a board that isn't rendered
 			    (review feedback on #2432). */}
-			{!showWelcome && (
-				<DashboardSubhead
-					title="Board"
-					subtitle="Live agent sessions flowing from work → review → merge."
-					actions={actions}
-				/>
-			)}
+			{!showWelcome && <DashboardSubhead title={t("board.title")} subtitle={t("board.subtitle")} actions={actions} />}
 
 			<div className="min-h-0 flex-1 overflow-hidden p-4.5">
 				{projectId && health.state !== "ok" ? (
@@ -252,13 +248,13 @@ export function SessionsBoard({ projectId }: SessionsBoardProps) {
 						{health.state === "restart_needed" || health.state === "duplicates" ? (
 							<TopbarButton disabled={isProjectRestarting} onClick={() => void restartOrchestrator()} variant="primary">
 								<RotateCw className="size-3.5" aria-hidden="true" />
-								Restart
+								{t("board.actions.restart")}
 							</TopbarButton>
 						) : null}
 					</div>
 				) : null}
 				{workspaceQuery.isError ? (
-					<p className="py-10 text-center text-xs text-passive">Could not load sessions.</p>
+					<p className="py-10 text-center text-xs text-passive">{t("board.errors.loadSessions")}</p>
 				) : showWelcome ? (
 					<BoardWelcome />
 				) : showProjectEmpty ? (
@@ -309,7 +305,7 @@ export function SessionsBoard({ projectId }: SessionsBoardProps) {
 						>
 							<path d="m9 18 6-6-6-6" />
 						</svg>
-						<span className="font-mono text-2xs font-medium uppercase tracking-wide-sm">Done / Terminated</span>
+						<span className="font-mono text-2xs font-medium uppercase tracking-wide-sm">{t("board.done")}</span>
 						<span className="ml-auto shrink-0 font-mono text-micro text-passive">{done.length}</span>
 					</button>
 					{doneExpanded && (
@@ -354,6 +350,7 @@ function ZoneColumn({
 	sessions: WorkspaceSession[];
 	onOpen: (s: WorkspaceSession) => void;
 }) {
+	const { t } = useTranslation();
 	const isWorkingColumn = col.zone === "working";
 	const [idleExpanded, setIdleExpanded] = useState(false);
 	const activeSessions = isWorkingColumn ? sessions.filter((session) => !isSessionInIdleStack(session)) : sessions;
@@ -374,7 +371,7 @@ function ZoneColumn({
 					}}
 				/>
 				<span className={cn("text-caption font-semibold uppercase tracking-wide-md", col.titleClassName)}>
-					{col.label}
+					{t(`board.columns.${col.zone}`)}
 				</span>
 				<span className="ml-auto font-mono text-caption leading-none text-passive">{sessions.length}</span>
 			</div>
@@ -408,6 +405,7 @@ function IdleSessionsStack({
 	onOpen: (s: WorkspaceSession) => void;
 	onToggle: () => void;
 }) {
+	const { t } = useTranslation();
 	return (
 		<div
 			className={cn(
@@ -417,7 +415,7 @@ function IdleSessionsStack({
 		>
 			<button
 				aria-expanded={expanded}
-				aria-label={`Idle sessions (${sessions.length})`}
+				aria-label={t("board.idleSessions", { count: sessions.length })}
 				className={cn(
 					"flex min-h-row-md w-full items-center gap-2 px-3 py-2 text-left transition-colors hover:text-foreground",
 					expanded ? "text-foreground" : "text-passive",
@@ -433,7 +431,7 @@ function IdleSessionsStack({
 					aria-hidden="true"
 				/>
 				<span className="size-dot-sm shrink-0 rounded-full bg-passive" aria-hidden="true" />
-				<span className="font-mono text-2xs font-semibold uppercase tracking-wide-md">Idle</span>
+				<span className="font-mono text-2xs font-semibold uppercase tracking-wide-md">{t("board.status.idle")}</span>
 				<span className="ml-auto shrink-0 font-mono text-caption leading-none text-passive">{sessions.length}</span>
 			</button>
 			{expanded ? (
@@ -464,7 +462,8 @@ function SessionCard({
 	isRestoring?: boolean;
 	isRestoreDisabled?: boolean;
 }) {
-	const badge = getSessionStatusView(session.status);
+	const { t } = useTranslation();
+	const badge = sessionBadge(session, t);
 	const issueId = canonicalTrackerIssueId(session.issueId);
 	const branch = session.branch || "";
 	const showBranch = branch !== "" && !sameLabel(branch, session.title) && !sameLabel(branch, session.id);
@@ -500,7 +499,7 @@ function SessionCard({
 					{issueId && (
 						<span
 							className="inline-flex max-w-branch-chip items-center truncate rounded-sm bg-accent/12 px-1.5 py-0.5 font-mono text-micro text-accent"
-							title={`Intake issue: ${issueId}`}
+							title={t("board.intakeIssue", { id: issueId })}
 						>
 							{issueId}
 						</span>
@@ -528,19 +527,19 @@ function SessionCard({
 				onClick={(event) => event.stopPropagation()}
 			>
 				{prSummaries.length === 0 ? (
-					"no PR yet"
+					t("board.noPR")
 				) : (
 					<div className="flex flex-col gap-1">
-						{groupPRsByLifecycle(prSummaries).map((group) => (
-							<BoardPRGroup group={group} key={group.status.label} linksInteractive={interactive} />
+						{groupPRsByLifecycle(prSummaries, t).map((group) => (
+							<BoardPRGroup group={group} key={group.status.key} linksInteractive={interactive} />
 						))}
 					</div>
 				)}
 			</div>
 			{restoreAction && (
 				<button
-					aria-label={`Restore ${session.title}`}
-					title={`Restore ${session.title}`}
+					aria-label={t("board.restoreSession", { title: session.title })}
+					title={t("board.restoreSession", { title: session.title })}
 					className={cn(
 						"absolute bottom-1.5 right-2 z-10 inline-flex h-control-xs items-center justify-center rounded-sm border border-accent bg-accent px-2.5 text-2xs font-semibold text-accent-foreground opacity-0 shadow-sm transition-opacity duration-normal ease-out disabled:cursor-not-allowed",
 						!isRestoreDisabled &&
@@ -551,14 +550,14 @@ function SessionCard({
 					onClick={restoreAction}
 					type="button"
 				>
-					{isRestoring ? "Restoring" : "Restore"}
+					{isRestoring ? t("board.restoring") : t("board.restore")}
 				</button>
 			)}
 		</div>
 	);
 }
 
-type BoardPRLifecycleStatus = { label: "closed" | "open" | "draft" | "merged"; className: string };
+type BoardPRLifecycleStatus = { key: "closed" | "open" | "draft" | "merged"; label: string; className: string };
 type BoardPRGroup = { status: BoardPRLifecycleStatus; prs: SessionPRSummary[] };
 
 function BoardPRGroup({ group, linksInteractive = true }: { group: BoardPRGroup; linksInteractive?: boolean }) {
@@ -590,25 +589,25 @@ function BoardPRGroup({ group, linksInteractive = true }: { group: BoardPRGroup;
 	);
 }
 
-function groupPRsByLifecycle(prs: SessionPRSummary[]): BoardPRGroup[] {
-	const groups = new Map<BoardPRLifecycleStatus["label"], BoardPRGroup>();
+function groupPRsByLifecycle(prs: SessionPRSummary[], t: TFunction): BoardPRGroup[] {
+	const groups = new Map<BoardPRLifecycleStatus["key"], BoardPRGroup>();
 	for (const pr of prs) {
-		const status = prLifecycleStatus(pr);
-		const group = groups.get(status.label);
+		const status = prLifecycleStatus(pr, t);
+		const group = groups.get(status.key);
 		if (group) {
 			group.prs.push(pr);
 		} else {
-			groups.set(status.label, { status, prs: [pr] });
+			groups.set(status.key, { status, prs: [pr] });
 		}
 	}
 	return Array.from(groups.values());
 }
 
-function prLifecycleStatus(pr: SessionPRSummary): BoardPRLifecycleStatus {
-	if (pr.state === "draft") return { label: "draft", className: "text-passive" };
-	if (pr.state === "merged") return { label: "merged", className: "text-accent" };
-	if (pr.state === "closed") return { label: "closed", className: "text-error" };
-	return { label: "open", className: "text-success" };
+function prLifecycleStatus(pr: SessionPRSummary, t: TFunction): BoardPRLifecycleStatus {
+	if (pr.state === "draft") return { key: "draft", label: t("board.lifecycle.draft"), className: "text-passive" };
+	if (pr.state === "merged") return { key: "merged", label: t("board.lifecycle.merged"), className: "text-accent" };
+	if (pr.state === "closed") return { key: "closed", label: t("board.lifecycle.closed"), className: "text-error" };
+	return { key: "open", label: t("board.lifecycle.open"), className: "text-success" };
 }
 
 function sameLabel(a: string, b: string): boolean {
@@ -628,5 +627,38 @@ function agentLabel(provider: WorkspaceSession["provider"]): string {
 			return "OpenCode";
 		default:
 			return provider;
+	}
+}
+
+function sessionBadge(session: WorkspaceSession, t: TFunction): { label: string; className: string } {
+	switch (session.status) {
+		case "needs_input":
+			return { label: t("board.status.inputNeeded"), className: "text-warning" };
+		case "no_signal":
+			return { label: t("board.status.noSignal"), className: "text-warning" };
+		case "ci_failed":
+			return { label: t("board.status.ciFailed"), className: "text-error" };
+		case "changes_requested":
+			return { label: t("board.status.changesRequested"), className: "text-warning" };
+		case "review_pending":
+			return { label: t("board.status.reviewPending"), className: "text-accent" };
+		case "draft":
+			return { label: t("board.status.draftPR"), className: "text-accent" };
+		case "pr_open":
+			return { label: t("board.status.prOpen"), className: "text-accent" };
+		case "approved":
+			return { label: t("board.status.approved"), className: "text-success" };
+		case "mergeable":
+			return { label: t("board.status.ready"), className: "text-success" };
+		case "merged":
+			return { label: t("board.status.merged"), className: "text-passive" };
+		case "terminated":
+			return { label: t("board.status.terminated"), className: "text-passive" };
+		case "idle":
+			return { label: t("board.status.idle"), className: "text-passive" };
+		case "unknown":
+			return { label: t("board.status.unknown"), className: "text-warning" };
+		default:
+			return { label: t("board.status.working"), className: "text-working" };
 	}
 }
