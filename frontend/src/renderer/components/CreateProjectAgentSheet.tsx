@@ -10,6 +10,8 @@ import type { ProjectKind } from "../types/workspace";
 import { Button } from "./ui/button";
 import { Label } from "./ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 
 type TrackerIntakeConfig = components["schemas"]["TrackerIntakeConfig"];
 
@@ -49,7 +51,7 @@ type SheetError = {
 	tone: "warning" | "error";
 };
 
-function projectSheetError(error: string): SheetError {
+function projectSheetError(error: string, t: TFunction): SheetError {
 	const setupMessage = error.replace(/^Setup failed:\s*/i, "").trim();
 	const codeMatch = setupMessage.match(/\(([A-Z0-9_]+)\)\s*$/);
 	const code = codeMatch?.[1];
@@ -58,26 +60,28 @@ function projectSheetError(error: string): SheetError {
 	switch (code) {
 		case "PROJECT_PATH_NOT_REPO_ROOT":
 			return {
-				title: "Select the repository root",
-				message: "This folder is inside another Git repository. Choose the top-level folder and try again.",
+				title: t("projectAgents.errors.repoRootTitle"),
+				message: t("projectAgents.errors.repoRootMessage"),
 				tone: "warning",
 			};
 		case "PROJECT_BARE_REPOSITORY":
 			return {
-				title: "Choose a normal checkout",
-				message: "AO needs a regular working folder, not a bare Git repository.",
+				title: t("projectAgents.errors.bareTitle"),
+				message: t("projectAgents.errors.bareMessage"),
 				tone: "warning",
 			};
 		case "UNSUPPORTED_GIT_REPO":
 			return {
-				title: "Choose a valid Git folder",
-				message: "AO could not read the Git metadata here. Repair the repository or choose a plain folder.",
+				title: t("projectAgents.errors.invalidGitTitle"),
+				message: t("projectAgents.errors.invalidGitMessage"),
 				tone: "warning",
 			};
 		default:
 			return {
-				title: error.toLowerCase().startsWith("setup failed:") ? "Repository setup failed" : "Could not create project",
-				message: message || "Try again, or choose a different folder.",
+				title: error.toLowerCase().startsWith("setup failed:")
+					? t("projectAgents.errors.setupFailed")
+					: t("projectAgents.errors.createFailed"),
+				message: message || t("projectAgents.errors.tryAgain"),
 				tone: "error",
 			};
 	}
@@ -94,6 +98,7 @@ export function CreateProjectAgentSheet({
 	path,
 	repositorySetupNeeded = false,
 }: CreateProjectAgentSheetProps) {
+	const { t } = useTranslation();
 	const queryClient = useQueryClient();
 	const agentsQuery = useQuery({
 		...agentsQueryOptions,
@@ -111,12 +116,12 @@ export function CreateProjectAgentSheet({
 	const agentsError = agentsQuery.isError
 		? agentsQuery.error instanceof Error
 			? agentsQuery.error.message
-			: "Could not load agent catalog."
+			: t("projectAgents.errors.loadCatalog")
 		: null;
 	const displayError = refreshAgentsMutation.isError
 		? refreshAgentsMutation.error instanceof Error
 			? refreshAgentsMutation.error.message
-			: "Could not refresh agent catalog."
+			: t("projectAgents.errors.refreshCatalog")
 		: agentsError;
 	const [workerAgent, setWorkerAgent] = useState("");
 	const [orchestratorAgent, setOrchestratorAgent] = useState("");
@@ -126,7 +131,7 @@ export function CreateProjectAgentSheet({
 	const [intake, setIntake] = useState<IntakeForm>(EMPTY_INTAKE);
 	const intakeIncomplete = intakeNeedsRule(intake);
 	const canSubmit = workerAgent !== "" && orchestratorAgent !== "" && !intakeIncomplete && !isBusy && !isLoadingAgents;
-	const sheetError = error ? projectSheetError(error) : null;
+	const sheetError = error ? projectSheetError(error, t) : null;
 
 	useEffect(() => {
 		if (!open) return;
@@ -153,7 +158,7 @@ export function CreateProjectAgentSheet({
 					<div className="flex items-start justify-between gap-4 border-b border-border px-5 py-4">
 						<div className="min-w-0">
 							<Dialog.Title className="text-subtitle font-semibold text-foreground">
-								{kind === "workspace" ? "Workspace agents" : "Project agents"}
+								{t(kind === "workspace" ? "projectAgents.workspaceTitle" : "projectAgents.projectTitle")}
 							</Dialog.Title>
 							<Dialog.Description className="mt-1 break-all text-xs text-muted-foreground">
 								{path ?? ""}
@@ -163,7 +168,7 @@ export function CreateProjectAgentSheet({
 							<button
 								type="button"
 								className="grid size-7 shrink-0 place-items-center rounded-md text-muted-foreground transition hover:bg-surface hover:text-foreground disabled:pointer-events-none disabled:opacity-50"
-								aria-label="Close project agents dialog"
+								aria-label={t("projectAgents.close")}
 								disabled={isBusy}
 							>
 								<X className="size-icon-base" aria-hidden="true" />
@@ -181,8 +186,8 @@ export function CreateProjectAgentSheet({
 						<div className="grid gap-3 sm:grid-cols-2">
 							<RequiredAgentField
 								id="newProjectWorkerAgent"
-								label="Worker agent"
-								placeholder="Select worker agent"
+								label={t("projectAgents.worker")}
+								placeholder={t("projectAgents.selectWorker")}
 								value={workerAgent}
 								authorized={agentOptions}
 								installed={installedAgents}
@@ -195,8 +200,8 @@ export function CreateProjectAgentSheet({
 							/>
 							<RequiredAgentField
 								id="newProjectOrchestratorAgent"
-								label="Orchestrator agent"
-								placeholder="Select orchestrator agent"
+								label={t("projectAgents.orchestrator")}
+								placeholder={t("projectAgents.selectOrchestrator")}
 								value={orchestratorAgent}
 								authorized={agentOptions}
 								installed={installedAgents}
@@ -209,17 +214,17 @@ export function CreateProjectAgentSheet({
 							/>
 						</div>
 
-						{isLoadingAgents && <p className="text-xs leading-row text-muted-foreground">Loading agents...</p>}
+						{isLoadingAgents && <p className="text-xs leading-row text-muted-foreground">{t("projectAgents.loading")}</p>}
 
 						<div className="flex items-center justify-between gap-3 text-xs leading-row text-muted-foreground">
-							<span>Agent availability is cached.</span>
+							<span>{t("projectAgents.cached")}</span>
 							<button
 								type="button"
 								className="shrink-0 rounded text-foreground underline-offset-2 hover:underline disabled:pointer-events-none disabled:opacity-50"
 								disabled={refreshAgentsMutation.isPending}
 								onClick={() => refreshAgentsMutation.mutate()}
 							>
-								{refreshAgentsMutation.isPending ? "Refreshing..." : "Refresh agents"}
+								{t(refreshAgentsMutation.isPending ? "projectAgents.refreshing" : "projectAgents.refresh")}
 							</button>
 						</div>
 
@@ -232,7 +237,7 @@ export function CreateProjectAgentSheet({
 									disabled={refreshAgentsMutation.isPending}
 									onClick={() => refreshAgentsMutation.mutate()}
 								>
-									Retry
+									{t("common.retry")}
 								</button>
 							</div>
 						)}
@@ -243,7 +248,7 @@ export function CreateProjectAgentSheet({
 
 						{repositorySetupNeeded && (
 							<div className="rounded-md border border-border bg-surface/80 px-3 py-2.5 text-xs leading-body-md text-muted-foreground">
-								If this folder needs Git setup, AO will initialize it and create the first commit before starting.
+								{t("projectAgents.gitSetup")}
 							</div>
 						)}
 
@@ -279,16 +284,16 @@ export function CreateProjectAgentSheet({
 
 						<div className="flex items-center justify-end gap-2 pt-1">
 							<Button type="button" variant="ghost" disabled={isBusy} onClick={() => onOpenChange(false)}>
-								Cancel
+								{t("common.cancel")}
 							</Button>
 							<Button type="submit" variant="primary" disabled={!canSubmit}>
 								{isInitializing
-									? "Setting up..."
+									? t("projectAgents.settingUp")
 									: isCreating
-										? "Creating..."
+										? t("projectAgents.creating")
 										: kind === "workspace"
-											? "Create workspace and start"
-											: "Create and start"}
+											? t("projectAgents.createWorkspace")
+											: t("projectAgents.create")}
 							</Button>
 						</div>
 					</form>
@@ -321,6 +326,7 @@ export const RequiredAgentField = memo(function RequiredAgentField({
 	supported?: AgentInfo[];
 	value: string;
 }) {
+	const { t } = useTranslation();
 	const fallbackAgents: AgentInfo[] = AGENT_OPTIONS.map((agent) => ({ id: agent, label: agent }));
 	const supportedAgents = supported ?? fallbackAgents;
 	const installedAgents = installed ?? supportedAgents;
@@ -340,7 +346,13 @@ export const RequiredAgentField = memo(function RequiredAgentField({
 				disabled: !isSelectable,
 				priorityRank: DEFAULT_AGENT_PRIORITY_RANK.get(agent.id) ?? Number.MAX_SAFE_INTEGER,
 				rank,
-				reason: !installedAgent ? "Needs install" : isAuthUnknown ? "Auth unknown" : !isAuthorized ? "Needs auth" : "",
+				reason: !installedAgent
+					? t("projectAgents.status.needsInstall")
+					: isAuthUnknown
+						? t("projectAgents.status.authUnknown")
+						: !isAuthorized
+							? t("projectAgents.status.needsAuth")
+							: "",
 				warning: isAuthUnknown,
 			};
 		})

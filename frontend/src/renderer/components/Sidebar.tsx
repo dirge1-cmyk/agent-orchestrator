@@ -686,7 +686,7 @@ function ProjectItem({
 					<DropdownMenuContent side="right" align="start" className="min-w-44">
 						<DropdownMenuItem disabled={isProjectRestarting} onSelect={() => requestNewTask(workspace.id)}>
 							<Plus aria-hidden="true" />
-							New session
+							{t("sidebar.menu.newSession")}
 						</DropdownMenuItem>
 						<DropdownMenuSeparator />
 						<DropdownMenuItem onSelect={() => selection.goSettings(workspace.id)}>
@@ -856,11 +856,12 @@ function SessionRow({ session, active, onOpen }: { session: WorkspaceSession; ac
 // the row itself is the prompt, so no confirmation dialog. Renders nothing in
 // every other update state.
 function RestartToUpdateRow({ status }: { status: UpdateStatus }) {
+	const { t } = useTranslation();
 	if (status.state !== "downloaded") return null;
 	const escalated = status.escalated === true;
 	return (
 		<button
-			aria-label={`Restart to install update${status.version ? ` v${status.version}` : ""}`}
+			aria-label={t("sidebar.update.install", { version: status.version ? ` v${status.version}` : "" })}
 			className={cn(
 				"flex w-full items-center gap-2.5 rounded-md p-2 text-left text-control font-medium transition-colors",
 				escalated
@@ -872,10 +873,10 @@ function RestartToUpdateRow({ status }: { status: UpdateStatus }) {
 		>
 			<RefreshCw aria-hidden="true" className="size-icon-lg shrink-0" />
 			<span className="min-w-0 flex-1">
-				<span className="block truncate tracking-tight">Restart to update</span>
+				<span className="block truncate tracking-tight">{t("sidebar.update.restart")}</span>
 				{status.version && (
 					<span className={cn("block truncate text-caption font-normal", escalated ? "text-working" : "text-passive")}>
-						v{status.version} ready
+						{t("sidebar.update.versionReady", { version: status.version })}
 					</span>
 				)}
 			</span>
@@ -890,13 +891,14 @@ function RestartToUpdateRow({ status }: { status: UpdateStatus }) {
 // Icon-rail variant of RestartToUpdateRow for the collapsed sidebar: icon-only
 // with the two-line copy in the tooltip.
 function RestartToUpdateRailButton({ status }: { status: UpdateStatus }) {
+	const { t } = useTranslation();
 	if (status.state !== "downloaded") return null;
 	const escalated = status.escalated === true;
 	return (
 		<Tooltip>
 			<TooltipTrigger asChild>
 				<button
-					aria-label={`Restart to install update${status.version ? ` v${status.version}` : ""}`}
+					aria-label={t("sidebar.update.install", { version: status.version ? ` v${status.version}` : "" })}
 					className={cn(
 						"grid size-9 place-items-center rounded-lg transition-colors [&_svg]:size-4",
 						escalated
@@ -910,7 +912,7 @@ function RestartToUpdateRailButton({ status }: { status: UpdateStatus }) {
 				</button>
 			</TooltipTrigger>
 			<TooltipContent side="right">
-				Restart to update{status.version ? ` · v${status.version} ready` : ""}
+				{t("sidebar.update.restart")}{status.version ? ` · ${t("sidebar.update.versionReady", { version: status.version })}` : ""}
 			</TooltipContent>
 		</Tooltip>
 	);

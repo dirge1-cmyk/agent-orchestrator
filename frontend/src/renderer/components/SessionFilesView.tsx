@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useTranslation } from "react-i18next";
 import { ChevronDown, ChevronRight, FileText, Maximize2, Minimize2, RefreshCw, Search, X } from "lucide-react";
 import type { components } from "../../api/schema";
 import { apiClient, apiErrorMessage } from "../lib/api-client";
@@ -43,6 +44,7 @@ export function SessionFilesView({
 	onToggleMaximized,
 }: SessionFilesViewProps) {
 	const queryClient = useQueryClient();
+	const { t } = useTranslation();
 	const [filter, setFilter] = useState("");
 	const [expandedPaths, setExpandedPaths] = useState<Set<string>>(() => new Set());
 	const initializedExpansionFor = useRef<string | null>(null);
@@ -54,7 +56,7 @@ export function SessionFilesView({
 			const { data, error } = await apiClient.GET("/api/v1/sessions/{sessionId}/workspace/files", {
 				params: { path: { sessionId } },
 			});
-			if (error) throw new Error(apiErrorMessage(error, "Unable to load workspace files"));
+			if (error) throw new Error(apiErrorMessage(error, t("sessionFiles.errors.loadWorkspace")));
 			return data ?? { sessionId, files: [], truncated: false };
 		},
 	});
@@ -115,13 +117,13 @@ export function SessionFilesView({
 	};
 
 	return (
-		<section className="flex h-full min-h-0 flex-col bg-background text-foreground" aria-label="Session files">
+		<section className="flex h-full min-h-0 flex-col bg-background text-foreground" aria-label={t("sessionFiles.ariaLabel")}>
 			<header className="flex h-13 shrink-0 items-center gap-3 border-b border-border bg-surface px-4">
 				<div className="flex min-w-0 items-center gap-2">
 					<FileText className="size-icon-md shrink-0 text-passive" aria-hidden="true" />
-					<h2 className="truncate text-md-sm font-semibold text-foreground">Files</h2>
+					<h2 className="truncate text-md-sm font-semibold text-foreground">{t("sessionFiles.title")}</h2>
 					<span className="shrink-0 font-mono text-caption text-passive">
-						{changedCount === 1 ? "1 file changed" : `${changedCount} files changed`}
+						{t("sessionFiles.changed", { count: changedCount })}
 					</span>
 				</div>
 				<label className="relative ml-auto min-w-0 flex-1 max-w-[360px]">
@@ -129,12 +131,12 @@ export function SessionFilesView({
 					<Input
 						className="h-8 pl-8 font-mono text-xs"
 						onChange={(event) => setFilter(event.target.value)}
-						placeholder="Search changed files"
+						placeholder={t("sessionFiles.search")}
 						value={filter}
 					/>
 				</label>
 				<Button
-					aria-label="Refresh files"
+					aria-label={t("sessionFiles.refresh")}
 					disabled={filesQuery.isFetching}
 					onClick={refresh}
 					size="icon-sm"
@@ -145,7 +147,7 @@ export function SessionFilesView({
 				</Button>
 				{onToggleMaximized ? (
 					<Button
-						aria-label={isMaximized ? "Minimize files" : "Maximize files"}
+						aria-label={t(isMaximized ? "sessionFiles.minimize" : "sessionFiles.maximize")}
 						onClick={() => onToggleMaximized(!isMaximized)}
 						size="icon-sm"
 						type="button"
@@ -158,7 +160,7 @@ export function SessionFilesView({
 						)}
 					</Button>
 				) : null}
-				<Button aria-label="Close files" onClick={onClose} size="icon-sm" type="button" variant="ghost">
+				<Button aria-label={t("sessionFiles.close")} onClick={onClose} size="icon-sm" type="button" variant="ghost">
 					<X className="size-icon-sm" aria-hidden="true" />
 				</Button>
 			</header>
@@ -166,7 +168,7 @@ export function SessionFilesView({
 			<div className="min-h-0 flex-1 overflow-auto bg-background">
 				<div className="mx-auto flex min-h-full w-full max-w-[1200px] flex-col px-6 py-5">
 					<div className="mb-4 flex shrink-0 items-center gap-3">
-						<h3 className="text-md-sm font-medium text-foreground">Review</h3>
+						<h3 className="text-md-sm font-medium text-foreground">{t("sessionFiles.review")}</h3>
 						<div className="ml-auto flex items-center gap-2">
 							<Button
 								disabled={visibleFiles.length === 0}
@@ -175,7 +177,7 @@ export function SessionFilesView({
 								type="button"
 								variant="outline"
 							>
-								{expandedVisibleCount > 0 ? "Collapse all" : "Expand all"}
+								{t(expandedVisibleCount > 0 ? "sessionFiles.collapseAll" : "sessionFiles.expandAll")}
 							</Button>
 						</div>
 					</div>
@@ -211,16 +213,17 @@ function ReviewFileList({
 	onToggle: (path: string) => void;
 	sessionId: string;
 }) {
+	const { t } = useTranslation();
 	if (isLoading) {
-		return <PanelMessage>Loading files...</PanelMessage>;
+		return <PanelMessage>{t("sessionFiles.loading")}</PanelMessage>;
 	}
 	if (error) {
 		return (
-			<PanelMessage action={<RetryButton onClick={onRetry} />}>{error.message || "Unable to load files."}</PanelMessage>
+			<PanelMessage action={<RetryButton onClick={onRetry} />}>{error.message || t("sessionFiles.errors.load")}</PanelMessage>
 		);
 	}
 	if (files.length === 0) {
-		return <PanelMessage>No changed files found.</PanelMessage>;
+		return <PanelMessage>{t("sessionFiles.empty")}</PanelMessage>;
 	}
 	return (
 		<ul className="session-files-review-list overflow-hidden border-y border-border/70">
@@ -249,6 +252,7 @@ function ReviewFileCard({
 	onToggle: () => void;
 	sessionId: string;
 }) {
+	const { t } = useTranslation();
 	const detailQuery = useQuery({
 		queryKey: ["session-workspace-file", sessionId, file.path],
 		enabled: expanded,
@@ -262,7 +266,7 @@ function ReviewFileCard({
 				<button
 					aria-controls={`workspace-diff-${file.path}`}
 					aria-expanded={expanded}
-					aria-label={`${expanded ? "Collapse" : "Expand"} ${file.path}`}
+					aria-label={t(expanded ? "sessionFiles.collapseFile" : "sessionFiles.expandFile", { path: file.path })}
 					className={cn(
 						"flex min-w-0 flex-1 items-center gap-3 px-4 py-3 text-left transition-colors",
 						expanded ? "bg-interactive-active/45" : "hover:bg-interactive-hover/50",
@@ -282,10 +286,10 @@ function ReviewFileCard({
 			</div>
 			{expanded ? (
 				<div id={`workspace-diff-${file.path}`} className="border-t border-border/60 bg-background/40">
-					{detailQuery.isPending ? <PanelMessage>Loading diff...</PanelMessage> : null}
+					{detailQuery.isPending ? <PanelMessage>{t("sessionFiles.loadingDiff")}</PanelMessage> : null}
 					{!detailQuery.isPending && detailQuery.error ? (
 						<PanelMessage action={<RetryButton onClick={() => void detailQuery.refetch()} />}>
-							{detailQuery.error.message || "Unable to load this file."}
+							{detailQuery.error.message || t("sessionFiles.errors.loadFile")}
 						</PanelMessage>
 					) : null}
 					{!detailQuery.isPending && !detailQuery.error && detailQuery.data ? (
@@ -307,13 +311,14 @@ async function loadWorkspaceFile(sessionId: string, path: string) {
 }
 
 function ReviewDiffBody({ detail }: { detail: WorkspaceFileDetail }) {
+	const { t } = useTranslation();
 	if (detail.binary) {
-		return <PanelMessage>Binary file preview is not available.</PanelMessage>;
+		return <PanelMessage>{t("sessionFiles.binaryUnavailable")}</PanelMessage>;
 	}
 	return (
 		<CodePanel
-			notice={detail.diffTruncated ? "Diff preview truncated." : undefined}
-			text={detail.diff || "No diff against HEAD."}
+			notice={detail.diffTruncated ? t("sessionFiles.diffTruncated") : undefined}
+			text={detail.diff || t("sessionFiles.noDiff")}
 			variant="diff"
 		/>
 	);
@@ -359,9 +364,10 @@ function PanelMessage({ action, children }: { action?: ReactNode; children: Reac
 }
 
 function RetryButton({ onClick }: { onClick: () => void }) {
+	const { t } = useTranslation();
 	return (
 		<Button onClick={onClick} size="sm" type="button" variant="outline">
-			Retry
+			{t("common.retry")}
 		</Button>
 	);
 }

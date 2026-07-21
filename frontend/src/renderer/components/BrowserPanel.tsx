@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { ArrowLeft, ArrowRight, Globe2, Maximize2, Minimize2, MousePointer2, RefreshCw, X } from "lucide-react";
 import { apiClient, apiErrorMessage } from "../lib/api-client";
 import { useBrowserView, type BrowserViewModel } from "../hooks/useBrowserView";
@@ -187,6 +188,7 @@ export function BrowserPanelView({
 	browserView,
 	annotationQueue,
 }: BrowserPanelProps & { annotationQueue: BrowserAnnotationQueueModel; browserView: BrowserViewModel }) {
+	const { t } = useTranslation();
 	const {
 		viewId,
 		navState,
@@ -249,21 +251,21 @@ export function BrowserPanelView({
 				cancelPicking();
 			}
 		} catch (error) {
-			failPicking(error instanceof Error ? error.message : "Unable to start annotation.");
+			failPicking(error instanceof Error ? error.message : t("browser.errors.startAnnotation"));
 		}
 	};
 
 	const annotationStatusLabel =
 		status === "picking"
-			? "Pick element"
+			? t("browser.annotation.pickElement")
 			: status === "queued"
 				? queuedCount > 1
-					? `Queued (${queuedCount})`
-					: "Queued"
+					? t("browser.annotation.queuedCount", { count: queuedCount })
+					: t("browser.annotation.queued")
 				: status === "sending"
-					? "Sending"
+					? t("browser.annotation.sending")
 					: status === "sent"
-						? "Sent"
+						? t("browser.annotation.sent")
 						: status === "error"
 							? error
 							: "";
@@ -278,7 +280,7 @@ export function BrowserPanelView({
 				onSubmit={submit}
 			>
 				<Button
-					aria-label="Back"
+					aria-label={t("navigation.back")}
 					disabled={!navState.canGoBack}
 					onClick={() => void goBack()}
 					size="icon-sm"
@@ -288,7 +290,7 @@ export function BrowserPanelView({
 					<ArrowLeft aria-hidden="true" className="size-icon-base" />
 				</Button>
 				<Button
-					aria-label="Forward"
+					aria-label={t("navigation.forward")}
 					disabled={!navState.canGoForward}
 					onClick={() => void goForward()}
 					size="icon-sm"
@@ -298,7 +300,7 @@ export function BrowserPanelView({
 					<ArrowRight aria-hidden="true" className="size-icon-base" />
 				</Button>
 				<Button
-					aria-label={navState.isLoading ? "Stop" : "Reload"}
+					aria-label={t(navState.isLoading ? "browser.stop" : "browser.reload")}
 					onClick={() => void (navState.isLoading ? stop() : reload())}
 					size="icon-sm"
 					type="button"
@@ -313,17 +315,17 @@ export function BrowserPanelView({
 				<Button
 					aria-label={
 						canRetryAnnotation
-							? "Retry annotation"
+							? t("browser.annotation.retry")
 							: annotationMode || status === "picking"
-								? "Cancel annotation"
-								: "Annotate page"
+								? t("browser.annotation.cancel")
+								: t("browser.annotation.annotate")
 					}
 					aria-pressed={annotationMode || status === "picking"}
 					className="browser-panel__annotate-btn"
 					disabled={!canAnnotate || status === "sending"}
 					onClick={() => void toggleAnnotationMode()}
 					size="icon-sm"
-					title={canRetryAnnotation ? "Retry annotation" : "Annotate page"}
+					title={t(canRetryAnnotation ? "browser.annotation.retry" : "browser.annotation.annotate")}
 					type="button"
 					variant="ghost"
 				>
@@ -340,7 +342,7 @@ export function BrowserPanelView({
 						{annotationStatusLabel}
 					</span>
 				) : sessionBusy ? (
-					<span className="browser-panel__annotation-status">Agent working</span>
+					<span className="browser-panel__annotation-status">{t("browser.agentWorking")}</span>
 				) : null}
 				<div className="relative min-w-0 flex-1">
 					<Globe2
@@ -348,7 +350,7 @@ export function BrowserPanelView({
 						className="pointer-events-none absolute left-2.25 top-1/2 size-icon-md -translate-y-1/2 text-passive"
 					/>
 					<Input
-						aria-label="Browser URL"
+						aria-label={t("browser.url")}
 						className="h-browser-url pl-browser-url font-mono text-xs"
 						onChange={(event) => setUrlInput(event.target.value)}
 						placeholder="localhost:5173"
@@ -356,7 +358,7 @@ export function BrowserPanelView({
 					/>
 				</div>
 				<Button
-					aria-label={poppedOut ? "Return to panel" : "Pop out"}
+					aria-label={t(poppedOut ? "browser.returnToPanel" : "browser.popOut")}
 					onClick={() => onTogglePopOut(!poppedOut)}
 					size="icon-sm"
 					type="button"
@@ -379,7 +381,7 @@ export function BrowserPanelView({
 				{showStaticPreview ? <StaticPreview url={navState.url} /> : null}
 				{navState.url === "" ? (
 					<div className="pointer-events-none absolute inset-0 grid place-items-center p-5 text-center font-mono text-xs text-passive">
-						<p>Enter a URL or click one in the terminal.</p>
+						<p>{t("browser.empty")}</p>
 					</div>
 				) : null}
 				{navState.error ? (
@@ -410,10 +412,11 @@ function MirrorVideo({ stream }: { stream: MediaStream }) {
 }
 
 function StaticPreview({ url }: { url: string }) {
+	const { t } = useTranslation();
 	return (
 		<div className="absolute inset-0 overflow-auto bg-preview text-preview-foreground">
 			<div className="border-b border-preview bg-surface px-4 py-3">
-				<div className="text-caption font-semibold uppercase tracking-wide-md text-preview-muted">AO Preview</div>
+				<div className="text-caption font-semibold uppercase tracking-wide-md text-preview-muted">{t("browser.preview.title")}</div>
 				<div className="mt-1 truncate font-mono text-xs text-preview-link">{url}</div>
 			</div>
 			<div className="mx-auto max-w-preview-max px-5 py-6">
@@ -421,21 +424,21 @@ function StaticPreview({ url }: { url: string }) {
 					<div className="flex items-center justify-between gap-3">
 						<div>
 							<h1 className="text-heading-lg font-semibold leading-tight tracking-normal text-preview-heading">
-								Demo app preview
+								{t("browser.preview.demoTitle")}
 							</h1>
 							<p className="mt-1 text-control leading-row text-preview-body">
-								The worker exposed a local Vite app with <span className="font-mono">ao preview</span>.
+								{t("browser.preview.demoDescription")} <span className="font-mono">ao preview</span>.
 							</p>
 						</div>
 						<span className="rounded-md bg-preview-success px-2.5 py-1 text-caption font-semibold text-success">
-							Loaded
+							{t("browser.preview.loaded")}
 						</span>
 					</div>
 					<div className="mt-5 grid grid-cols-3 gap-3">
 						{[
-							["Routes", "12 passing"],
-							["Build", "ready"],
-							["Latency", "42 ms"],
+							[t("browser.preview.routes"), t("browser.preview.routesValue")],
+							[t("browser.preview.build"), t("browser.preview.ready")],
+							[t("browser.preview.latency"), "42 ms"],
 						].map(([label, value]) => (
 							<div key={label} className="rounded-md border border-preview-tile bg-preview-tile p-3">
 								<div className="text-caption font-medium uppercase tracking-wide text-preview-muted">{label}</div>

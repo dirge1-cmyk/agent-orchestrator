@@ -2,6 +2,7 @@ import { useCanGoBack, useRouter } from "@tanstack/react-router";
 import { ArrowLeft, ArrowRight, PanelLeft } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useUiStore } from "../stores/ui-store";
+import { useTranslation } from "react-i18next";
 
 const isMac = typeof navigator !== "undefined" && /Mac|iPod|iPhone|iPad/.test(navigator.userAgent);
 const noDragStyle = isMac ? ({ WebkitAppRegion: "no-drag" } as React.CSSProperties) : undefined;
@@ -37,6 +38,7 @@ function useCanGoForward(): boolean {
 }
 
 export function TitlebarNav() {
+	const { t } = useTranslation();
 	const { isSidebarOpen, toggleSidebar } = useUiStore();
 	const router = useRouter();
 	const canGoBack = useCanGoBack();
@@ -50,20 +52,20 @@ export function TitlebarNav() {
 			style={noDragStyle}
 		>
 			<TitlebarButton
-				label={isSidebarOpen ? "Collapse sidebar" : "Expand sidebar"}
+				label={t(isSidebarOpen ? "sidebar.tooltips.collapse" : "sidebar.tooltips.expand")}
 				onClick={toggleSidebar}
-				title={`${isSidebarOpen ? "Collapse" : "Expand"} sidebar · ⌘B`}
+				title={t(isSidebarOpen ? "sidebar.tooltips.collapse" : "sidebar.tooltips.expand")}
 			>
 				<PanelLeft className="size-icon-lg" aria-hidden="true" />
 			</TitlebarButton>
-			<TitlebarButton disabled={!canGoBack} label="Go back" onClick={() => router.history.back()} title="Go back">
+			<TitlebarButton disabled={!canGoBack} label={t("navigation.back")} onClick={() => router.history.back()} title={t("navigation.back")}>
 				<ArrowLeft className="size-icon-lg" aria-hidden="true" />
 			</TitlebarButton>
 			<TitlebarButton
 				disabled={!canGoForward}
-				label="Go forward"
+				label={t("navigation.forward")}
 				onClick={() => router.history.forward()}
-				title="Go forward"
+				title={t("navigation.forward")}
 			>
 				<ArrowRight className="size-icon-lg" aria-hidden="true" />
 			</TitlebarButton>

@@ -1,5 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import { useTranslation } from "react-i18next";
+import i18n from "../i18n";
 import { ArrowUpRight, Files as FilesIcon, GitPullRequest, Play, Shield, Terminal, X } from "lucide-react";
 import type { components } from "../../api/schema";
 import { apiClient, apiErrorMessage } from "../lib/api-client";
@@ -141,6 +143,7 @@ export function SessionInspector({
 	view?: InspectorView;
 	onViewChange?: (view: InspectorView) => void;
 }) {
+	const { t } = useTranslation();
 	const [internalView, setInternalView] = useState<InspectorView>("summary");
 	const view = viewProp ?? internalView;
 	const setView = (next: InspectorView) => {
@@ -151,16 +154,16 @@ export function SessionInspector({
 
 	if (!session) {
 		return (
-			<aside className={inspectorShellClass} aria-label="Session inspector">
+			<aside className={inspectorShellClass} aria-label={t("sessionInspector.ariaLabel")}>
 				<div className={inspectorBodyClass}>
-					<p className={inspectorEmptyClass}>Loading session…</p>
+					<p className={inspectorEmptyClass}>{t("sessionInspector.loadingSession")}</p>
 				</div>
 			</aside>
 		);
 	}
 
 	return (
-		<aside className={inspectorShellClass} aria-label="Session inspector">
+		<aside className={inspectorShellClass} aria-label={t("sessionInspector.ariaLabel")}>
 			<div className="flex h-inspector-tabs shrink-0 items-center gap-1 border-b border-border px-3" role="tablist">
 				{VIEWS.map((entry) => (
 					<button
@@ -175,7 +178,7 @@ export function SessionInspector({
 						onClick={() => setView(entry.id)}
 					>
 						<span className="inline-flex shrink-0 [&_svg]:size-icon-md">{entry.icon}</span>
-						<span className="truncate">{entry.label}</span>
+						<span className="truncate">{t(`sessionInspector.views.${entry.id}`)}</span>
 					</button>
 				))}
 			</div>
@@ -233,9 +236,10 @@ function Section({
 }
 
 function SummaryView({ session }: { session: WorkspaceSession }) {
+	const { t } = useTranslation();
 	const query = useSessionScmSummary(session.id);
 	const prSummaries = sessionPRDisplaySummaries(session, query.data);
-	const prSectionTitle = prSummaries.length > 1 ? `Pull requests (${prSummaries.length})` : "Pull request";
+	const prSectionTitle = t(prSummaries.length > 1 ? "sessionInspector.pullRequestsCount" : "sessionInspector.pullRequest", { count: prSummaries.length });
 	const branchLabel = session.branch || `session/${session.id}`;
 	const issueId = canonicalTrackerIssueId(session.issueId);
 
@@ -243,7 +247,7 @@ function SummaryView({ session }: { session: WorkspaceSession }) {
 		<div role="tabpanel">
 			<Section title={prSectionTitle}>
 				{prSummaries.length === 0 ? (
-					<p className={inspectorEmptyClass}>No pull request opened yet.</p>
+					<p className={inspectorEmptyClass}>{t("sessionInspector.noPullRequest")}</p>
 				) : (
 					<div className="flex flex-col gap-2">
 						{prSummaries.map((pr) => (
@@ -253,17 +257,17 @@ function SummaryView({ session }: { session: WorkspaceSession }) {
 				)}
 			</Section>
 
-			<Section title="Activity">
+			<Section title={t("sessionInspector.activity")}>
 				<ActivityTimeline session={session} />
 			</Section>
 
-			<Section className="border-t border-border pt-5" title="Overview">
+			<Section className="border-t border-border pt-5" title={t("sessionInspector.overview")}>
 				<dl className="flex flex-col gap-1">
-					<Row k="Agent" v={session.provider} mono />
-					{issueId && <Row k="Issue" v={issueId} mono />}
-					<Row k="Branch" v={branchLabel} mono />
-					<Row k="Started" v={formatTimeCompact(session.createdAt ?? session.updatedAt)} mono />
-					<Row k="Session" v={session.id} mono />
+					<Row k={t("sessionInspector.fields.agent")} v={session.provider} mono />
+					{issueId && <Row k={t("sessionInspector.fields.issue")} v={issueId} mono />}
+					<Row k={t("sessionInspector.fields.branch")} v={branchLabel} mono />
+					<Row k={t("sessionInspector.fields.started")} v={formatTimeCompact(session.createdAt ?? session.updatedAt)} mono />
+					<Row k={t("sessionInspector.fields.session")} v={session.id} mono />
 				</dl>
 			</Section>
 		</div>
@@ -271,13 +275,14 @@ function SummaryView({ session }: { session: WorkspaceSession }) {
 }
 
 function PRSummaryCard({ pr }: { pr: SessionPRSummary }) {
+	const { t } = useTranslation();
 	return (
 		<div className="rounded-md border border-border bg-surface px-3 py-2.5">
 			<div className="flex items-center gap-2">
 				<GitPullRequest className="size-icon-md shrink-0 text-passive" aria-hidden="true" />
 				<span className="text-md-sm font-medium text-foreground">PR #{pr.number}</span>
 				<Badge variant="outline" className={cn("h-5 px-1.5 text-micro font-medium", prStateTone[pr.state])}>
-					{pr.state}
+					{t(`sessionInspector.prStates.${pr.state}`)}
 				</Badge>
 				<a
 					href={prBrowserUrl(pr)}
@@ -285,7 +290,7 @@ function PRSummaryCard({ pr }: { pr: SessionPRSummary }) {
 					rel="noopener noreferrer"
 					className="ml-auto inline-flex items-center gap-0.5 text-caption font-medium text-accent hover:underline"
 				>
-					<span>Open</span>
+					<span>{t("sessionInspector.open")}</span>
 					<ArrowUpRight aria-hidden="true" className="size-icon-2xs" strokeWidth={2} />
 				</a>
 			</div>
@@ -306,11 +311,12 @@ const timelineNodeTone: Record<TimelineTone, string> = {
 };
 
 function ActivityTimeline({ session }: { session: WorkspaceSession }) {
+	const { t } = useTranslation();
 	const events: { tone: TimelineTone; node: ReactNode; ts: string | null }[] = [];
 
 	events.push({
 		tone: "neutral",
-		node: <>Created worktree &amp; branch</>,
+		node: <>{t("sessionInspector.timeline.created")}</>,
 		ts: formatTimeCompact(session.createdAt ?? session.updatedAt),
 	});
 
@@ -320,7 +326,7 @@ function ActivityTimeline({ session }: { session: WorkspaceSession }) {
 			tone: "neutral",
 			node: (
 				<>
-					Draft <b>PR #{pr.number}</b>
+					{t("sessionInspector.timeline.draft")} <b>PR #{pr.number}</b>
 				</>
 			),
 			ts: null,
@@ -332,7 +338,7 @@ function ActivityTimeline({ session }: { session: WorkspaceSession }) {
 			tone: "neutral",
 			node: (
 				<>
-					Opened <b>PR #{pr.number}</b>
+					{t("sessionInspector.timeline.opened")} <b>PR #{pr.number}</b>
 				</>
 			),
 			ts: null,
@@ -366,7 +372,7 @@ function ActivityTimeline({ session }: { session: WorkspaceSession }) {
 			tone: "good",
 			node: (
 				<>
-					Merged <b>PR #{pr.number}</b>
+					{t("sessionInspector.timeline.merged")} <b>PR #{pr.number}</b>
 				</>
 			),
 			ts: null,
@@ -376,7 +382,7 @@ function ActivityTimeline({ session }: { session: WorkspaceSession }) {
 	if (session.status === "merged") {
 		events.push({
 			tone: "good",
-			node: <>Done</>,
+			node: <>{t("sessionInspector.timeline.done")}</>,
 			ts: formatTimeCompact(session.updatedAt),
 		});
 	}
@@ -412,7 +418,7 @@ function InspectorActivityPill({ activity }: { activity?: WorkspaceSession["acti
 }
 
 function InspectorScmPill({ state }: { state: ScmTimelineState }) {
-	if (state === "conflict") return <TimelinePill {...CONFLICT_PILL} />;
+	if (state === "conflict") return <TimelinePill {...CONFLICT_PILL} label={i18n.t("sessionInspector.conflict")} />;
 	return <TimelinePill {...getSessionTimelinePillView(state)} />;
 }
 
@@ -447,6 +453,7 @@ function ReviewsView({
 	session: WorkspaceSession;
 	onOpenReviewerTerminal?: OpenReviewerTerminal;
 }) {
+	const { t } = useTranslation();
 	const hasPr = sortedPRs(session).length > 0;
 	const queryClient = useQueryClient();
 	const [reviewNotice, setReviewNotice] = useState<string | null>(null);
@@ -463,7 +470,7 @@ function ReviewsView({
 			const { data, error } = await apiClient.GET("/api/v1/sessions/{sessionId}/reviews", {
 				params: { path: { sessionId: session.id } },
 			});
-			if (error) throw new Error(apiErrorMessage(error, "Unable to load reviews"));
+			if (error) throw new Error(apiErrorMessage(error, t("sessionInspector.reviews.errors.load")));
 			return data ?? ({ reviewerHandleId: "", reviews: [] } satisfies ReviewsResponse);
 		},
 	});
@@ -484,7 +491,7 @@ function ReviewsView({
 			const { data, error, response } = await apiClient.POST("/api/v1/sessions/{sessionId}/reviews/trigger", {
 				params: { path: { sessionId: session.id } },
 			});
-			if (error) throw new Error(apiErrorMessage(error, "Unable to start review"));
+			if (error) throw new Error(apiErrorMessage(error, t("sessionInspector.reviews.errors.start")));
 			return { data, reused: response?.status === 200 };
 		},
 		onMutate: () => {
@@ -495,7 +502,7 @@ function ReviewsView({
 			void queryClient.invalidateQueries({ queryKey: workspaceQueryKey });
 			const started = data?.reviews?.find((review) => review.status === "running" && review.latestRun);
 			if (reused || !started?.latestRun) {
-				setReviewNotice("No needed reviews were started.");
+				setReviewNotice(t("sessionInspector.reviews.noneStarted"));
 				return;
 			}
 			if (data?.reviewerHandleId) {
@@ -509,7 +516,7 @@ function ReviewsView({
 			const { error } = await apiClient.POST("/api/v1/sessions/{sessionId}/reviews/cancel", {
 				params: { path: { sessionId: session.id } },
 			});
-			if (error) throw new Error(apiErrorMessage(error, "Unable to cancel review"));
+			if (error) throw new Error(apiErrorMessage(error, t("sessionInspector.reviews.errors.cancel")));
 		},
 		onSuccess: () => {
 			setReviewNotice(null);
@@ -521,7 +528,7 @@ function ReviewsView({
 
 	return (
 		<div role="tabpanel">
-			<Section title="Reviews">
+			<Section title={t("sessionInspector.views.reviews")}>
 				<ReviewPanel
 					config={projectConfigQuery.data}
 					error={reviewsQuery.error ?? triggerReview.error ?? cancelReview.error}
@@ -643,11 +650,12 @@ function ReviewPanel({
 	onCancel: () => void;
 	onOpenTerminal?: OpenReviewerTerminal;
 }) {
+	const { t } = useTranslation();
 	if (sortedPRs(session).length === 0) {
-		return <p className={inspectorEmptyClass}>No pull request opened yet.</p>;
+		return <p className={inspectorEmptyClass}>{t("sessionInspector.noPullRequest")}</p>;
 	}
 	if (isLoading) {
-		return <p className={inspectorEmptyClass}>Loading reviews...</p>;
+		return <p className={inspectorEmptyClass}>{t("sessionInspector.reviews.loading")}</p>;
 	}
 
 	const openPRURLs = new Set(
@@ -675,7 +683,7 @@ function ReviewPanel({
 		<div className="flex flex-col gap-4">
 			{error ? (
 				<p className="m-0 rounded-md border border-error/28 bg-error/8 px-2.5 py-2 text-sm-md leading-normal text-error">
-					{apiErrorMessage(error, "Review request failed")}
+					{apiErrorMessage(error, t("sessionInspector.reviews.errors.request"))}
 				</p>
 			) : null}
 			{notice ? (
@@ -686,11 +694,11 @@ function ReviewPanel({
 			<div className="inline-flex min-w-0 items-center gap-2 font-mono text-control font-semibold text-foreground">
 				<Shield aria-hidden="true" className="size-icon-lg shrink-0 text-passive" />
 				<span className="min-w-0 truncate">{harness}</span>
-				<span className="font-sans text-sm-md font-medium text-passive">reviewer</span>
+				<span className="font-sans text-sm-md font-medium text-passive">{t("sessionInspector.reviews.reviewer")}</span>
 			</div>
 			<div className="flex flex-col gap-3 overflow-hidden rounded-lg border border-border bg-surface p-3 @max-[300px]/inspector:overflow-hidden">
 				<div className="flex min-w-0 items-center justify-between gap-2.5 @max-[300px]/inspector:flex-col @max-[300px]/inspector:items-start">
-					<span className="min-w-0 truncate text-xs font-semibold text-muted-foreground">Pull requests</span>
+					<span className="min-w-0 truncate text-xs font-semibold text-muted-foreground">{t("sessionInspector.reviews.pullRequests")}</span>
 					<span
 						className={cn(
 							"inline-flex h-control-xs max-w-inspector-status-chip shrink-0 items-center gap-1 overflow-hidden truncate rounded-md px-2 text-2xs font-semibold leading-none @max-[300px]/inspector:max-w-full",
@@ -702,7 +710,7 @@ function ReviewPanel({
 				</div>
 				<div className="flex flex-col gap-0 overflow-hidden rounded-md border border-border bg-surface-faint">
 					{openReviewStates.length === 0 ? (
-						<p className={cn(inspectorEmptyClass, "p-3")}>No open pull requests to review.</p>
+						<p className={cn(inspectorEmptyClass, "p-3")}>{t("sessionInspector.reviews.noOpen")}</p>
 					) : null}
 					{openReviewStates.map((reviewState) => (
 						<ReviewStateRow key={`${reviewState.prUrl}:${reviewState.targetSha}`} reviewState={reviewState} />
@@ -721,7 +729,7 @@ function ReviewPanel({
 						type="button"
 					>
 						{reviewRunning ? <X aria-hidden="true" /> : <Play aria-hidden="true" />}
-						{reviewRunning ? (isCancelling ? "Cancelling..." : "Cancel review") : runAction}
+						{reviewRunning ? (isCancelling ? t("sessionInspector.reviews.cancelling") : t("sessionInspector.reviews.cancel")) : runAction}
 					</button>
 					<button
 						className="inline-flex h-control-xl min-w-0 items-center justify-center gap-2 overflow-hidden truncate rounded-md border border-border bg-raised px-2.5 text-xs font-semibold text-muted-foreground transition-[background,border-color,color] duration-fast hover:bg-interactive-hover hover:text-foreground disabled:cursor-not-allowed disabled:opacity-45 [&_svg]:size-icon-md [&_svg]:shrink-0"
@@ -730,7 +738,7 @@ function ReviewPanel({
 						type="button"
 					>
 						<Terminal aria-hidden="true" />
-						Open terminal
+						{t("sessionInspector.reviews.openTerminal")}
 					</button>
 				</div>
 			</div>
@@ -775,22 +783,22 @@ function sessionReviewVerdict(reviewStates: PRReviewState[]): {
 	tone: "neutral" | "running" | "success" | "danger";
 } {
 	if (reviewStates.some((reviewState) => reviewState.status === "running")) {
-		return { label: "Reviewing...", tone: "running" };
+		return { label: i18n.t("sessionInspector.reviews.verdict.reviewing"), tone: "running" };
 	}
 	if (reviewStates.some((reviewState) => reviewState.latestRun?.status === "failed")) {
-		return { label: "Failed", tone: "danger" };
+		return { label: i18n.t("sessionInspector.reviews.verdict.failed"), tone: "danger" };
 	}
 	if (reviewStates.some((reviewState) => reviewState.latestRun?.status === "cancelled")) {
-		return { label: "Cancelled", tone: "neutral" };
+		return { label: i18n.t("sessionInspector.reviews.verdict.cancelled"), tone: "neutral" };
 	}
 	if (reviewStates.some((reviewState) => reviewState.status === "changes_requested")) {
-		return { label: "Changes requested", tone: "danger" };
+		return { label: i18n.t("sessionInspector.reviews.verdict.changesRequested"), tone: "danger" };
 	}
 	const eligibleReviews = reviewStates.filter((reviewState) => reviewState.status !== "ineligible");
 	if (eligibleReviews.length > 0 && eligibleReviews.every((reviewState) => reviewState.status === "up_to_date")) {
-		return { label: "Approved", tone: "success" };
+		return { label: i18n.t("sessionInspector.reviews.verdict.approved"), tone: "success" };
 	}
-	return { label: "Not run", tone: "neutral" };
+	return { label: i18n.t("sessionInspector.reviews.verdict.notRun"), tone: "neutral" };
 }
 
 function reviewVerdict(reviewState: PRReviewState): {
@@ -798,33 +806,33 @@ function reviewVerdict(reviewState: PRReviewState): {
 	tone: "neutral" | "running" | "success" | "danger";
 } {
 	if (reviewState.latestRun?.status === "failed") {
-		return { label: "Failed", tone: "danger" };
+		return { label: i18n.t("sessionInspector.reviews.verdict.failed"), tone: "danger" };
 	}
 	if (reviewState.latestRun?.status === "cancelled") {
-		return { label: "Cancelled", tone: "neutral" };
+		return { label: i18n.t("sessionInspector.reviews.verdict.cancelled"), tone: "neutral" };
 	}
 	switch (reviewState.status) {
 		case "running":
-			return { label: "Reviewing...", tone: "running" };
+			return { label: i18n.t("sessionInspector.reviews.verdict.reviewing"), tone: "running" };
 		case "up_to_date":
-			return { label: "Approved", tone: "success" };
+			return { label: i18n.t("sessionInspector.reviews.verdict.approved"), tone: "success" };
 		case "changes_requested":
-			return { label: "Changes requested", tone: "danger" };
+			return { label: i18n.t("sessionInspector.reviews.verdict.changesRequested"), tone: "danger" };
 		case "needs_review":
 		case "ineligible":
-			return { label: "Not run", tone: "neutral" };
+			return { label: i18n.t("sessionInspector.reviews.verdict.notRun"), tone: "neutral" };
 	}
-	return { label: "Not run", tone: "neutral" };
+	return { label: i18n.t("sessionInspector.reviews.verdict.notRun"), tone: "neutral" };
 }
 
 function reviewSessionRunAction(reviewStates: PRReviewState[], isTriggering: boolean): string {
 	if (isTriggering || reviewStates.some((reviewState) => reviewState.status === "running")) {
-		return "Reviewing...";
+		return i18n.t("sessionInspector.reviews.verdict.reviewing");
 	}
 	if (reviewStates.some((reviewState) => reviewState.status === "changes_requested" || reviewState.latestRun)) {
-		return "Re-run review";
+		return i18n.t("sessionInspector.reviews.rerun");
 	}
-	return "Run review";
+	return i18n.t("sessionInspector.reviews.run");
 }
 
 function BrowserView({
@@ -842,6 +850,7 @@ function BrowserView({
 	onTogglePopOut?: (next: boolean) => void;
 	browserView?: BrowserViewModel;
 }) {
+	const { t } = useTranslation();
 	// While maximized, the browser is a full-window overlay that covers the rail,
 	// so the inspector's Browser tab has nothing to show (and must not mount a
 	// second BrowserPanelView — it would fight the overlay over the shared native
@@ -850,9 +859,9 @@ function BrowserView({
 		return (
 			<div role="tabpanel">
 				<div className={cn(inspectorEmptyClass, "flex flex-col items-center gap-2 py-10 px-5 text-center")}>
-					<p className="text-md-sm text-muted-foreground">Browser preview is in the center pane.</p>
+					<p className="text-md-sm text-muted-foreground">{t("sessionInspector.browserInCenter")}</p>
 					<Button onClick={() => onTogglePopOut?.(false)} size="sm" type="button" variant="outline">
-						Return to panel
+						{t("browser.returnToPanel")}
 					</Button>
 				</div>
 			</div>
@@ -876,6 +885,7 @@ function BrowserView({
 }
 
 function FilesView({ filesView, onOpenFiles }: { filesView?: ReactNode; onOpenFiles?: () => void }) {
+	const { t } = useTranslation();
 	if (filesView) {
 		return (
 			<div className="h-full min-h-0" role="tabpanel">
@@ -886,9 +896,9 @@ function FilesView({ filesView, onOpenFiles }: { filesView?: ReactNode; onOpenFi
 	return (
 		<div role="tabpanel">
 			<div className={cn(inspectorEmptyClass, "flex flex-col items-center gap-2 px-5 py-10 text-center")}>
-				<p className="text-md-sm text-muted-foreground">Files are not available for this session.</p>
+				<p className="text-md-sm text-muted-foreground">{t("sessionInspector.filesUnavailable")}</p>
 				<Button disabled={!onOpenFiles} onClick={() => onOpenFiles?.()} size="sm" type="button" variant="outline">
-					Open files
+					{t("sessionInspector.openFiles")}
 				</Button>
 			</div>
 		</div>

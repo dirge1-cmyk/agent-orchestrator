@@ -1,6 +1,8 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import type { TFunction } from "i18next";
 import type { TerminalTarget } from "../types/terminal";
 import type { WorkspaceSession } from "../types/workspace";
 import type { Theme } from "../stores/ui-store";
@@ -133,13 +135,14 @@ export function providerScrollsByKeyboard(provider?: string): boolean {
 	return provider ? KEYBOARD_SCROLL_PROVIDERS.has(provider) : false;
 }
 
-function bannerText(state: TerminalSessionState, error?: string): string | undefined {
-	if (state === "reattaching") return "Terminal disconnected — reattaching…";
-	if (state === "error") return `Terminal error: ${error ?? "connection failed"}`;
+function bannerText(state: TerminalSessionState, t: TFunction, error?: string): string | undefined {
+	if (state === "reattaching") return t("terminal.reattaching");
+	if (state === "error") return t("terminal.error", { error: error ?? t("terminal.connectionFailed") });
 	return undefined;
 }
 
 function AttachedTerminal({ session, theme, daemonReady, terminalTarget, fontSize }: TerminalPaneProps) {
+	const { t } = useTranslation();
 	const attachSession =
 		session && terminalTarget?.kind === "reviewer"
 			? { ...session, terminalHandleId: terminalTarget.handleId }
@@ -208,7 +211,7 @@ function AttachedTerminal({ session, theme, daemonReady, terminalTarget, fontSiz
 				setRestoreError(result.message);
 			}
 		} catch (err) {
-			setRestoreError(err instanceof Error ? err.message : "Unable to restore session");
+			setRestoreError(err instanceof Error ? err.message : t("terminal.restoreFailed"));
 		} finally {
 			setIsRestoring(false);
 		}
@@ -234,20 +237,20 @@ function AttachedTerminal({ session, theme, daemonReady, terminalTarget, fontSiz
 	if (initFailed) {
 		return (
 			<div className="grid h-full place-items-center bg-terminal p-4 font-mono text-xs text-muted-foreground">
-				Terminal failed to initialize on this GPU/driver. Restart the app to retry.
+				{t("terminal.initFailed")}
 			</div>
 		);
 	}
 
-	const banner = bannerText(state, error);
+	const banner = bannerText(state, t, error);
 	const showEmptyState = !handleId;
 	const showEndedState = state === "exited" || canRestoreSession;
-	const emptyStateTitle = session ? "Starting session" : "Agent Orchestrator";
+	const emptyStateTitle = session ? t("terminal.startingSession") : "Agent Orchestrator";
 	const emptyStateMessage = session
 		? session.kind === "orchestrator"
-			? "Preparing the orchestrator terminal. This can take a moment while AO creates the worktree and starts the agent."
-			: "Preparing the worker terminal. This can take a moment while AO creates the worktree and starts the agent."
-		: "No session selected. Pick a worker to attach its terminal.";
+			? t("terminal.preparingOrchestrator")
+			: t("terminal.preparingWorker")
+		: t("terminal.noSession");
 
 	return (
 		<div className="flex h-full min-h-0 flex-col bg-terminal">
@@ -262,7 +265,7 @@ function AttachedTerminal({ session, theme, daemonReady, terminalTarget, fontSiz
 			)}
 			<div className="relative min-h-0 flex-1">
 				<XtermTerminal
-					ariaLabel="Session terminal"
+					ariaLabel={t("terminal.ariaLabel")}
 					fontSize={fontSize}
 					onError={handleInitError}
 					onLinkOpen={handleLinkOpen}
@@ -307,18 +310,19 @@ type TerminalEndedStripProps = {
 };
 
 function TerminalEndedStrip({ canRestore, error, isRestoring, onRestore, variant }: TerminalEndedStripProps) {
+	const { t } = useTranslation();
 	const message = canRestore
-		? "Restore the session to attach a live terminal and continue writing."
+		? t("terminal.ended.restoreMessage")
 		: variant === "reviewer"
-			? "This reviewer terminal has ended. Re-run review from the summary panel, or switch back to the agent terminal."
-			: "This terminal process ended, but the session is not marked terminated yet.";
+			? t("terminal.ended.reviewerMessage")
+			: t("terminal.ended.processMessage");
 
 	return (
 		<div className="shrink-0 border-b border-border bg-surface/80 px-4 py-2">
 			<div className="flex min-h-control-board items-center gap-3">
 				<div className="min-w-0 flex-1">
 					<div className="font-mono text-caption font-medium uppercase tracking-wide-md text-muted-foreground">
-						Terminal ended
+						{t("terminal.ended.title")}
 					</div>
 					<div className="mt-0.5 truncate text-xs text-muted-foreground">{message}</div>
 				</div>
@@ -326,8 +330,8 @@ function TerminalEndedStrip({ canRestore, error, isRestoring, onRestore, variant
 				{canRestore && (
 					<button
 						type="button"
-						aria-label="Restore session"
-						title="Restore session"
+						aria-label={t("terminal.restoreSession")}
+						title={t("terminal.restoreSession")}
 						className="inline-flex size-control-form shrink-0 items-center justify-center rounded-md border border-border bg-raised text-foreground transition hover:bg-interactive-hover disabled:cursor-not-allowed disabled:opacity-50"
 						disabled={isRestoring}
 						onClick={onRestore}

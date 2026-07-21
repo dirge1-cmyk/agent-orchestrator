@@ -81,6 +81,12 @@
 		"nightly": "夜间版",
 		"feedback": "反馈",
 		"toggle": "切换侧边栏",
+		"mobile": { "title": "侧边栏", "description": "显示移动端侧边栏。" },
+		"update": {
+			"install": "重启以安装更新{{version}}",
+			"restart": "重启并更新",
+			"versionReady": "v{{version}} 已就绪"
+		},
 
 		"tooltips": {
 			"board": "编排器看板",
@@ -99,6 +105,7 @@
 		},
 
 		"menu": {
+			"newSession": "新建会话",
 			"lightMode": "浅色模式",
 			"darkMode": "深色模式",
 			"pullRequests": "拉取请求",
@@ -381,6 +388,309 @@
 		"switchToEnglish": "切换到英文",
 		"switchToChinese": "切换到简体中文"
 	},
+	"common": {
+		"breadcrumb": "面包屑导航",
+		"cancel": "取消",
+		"close": "关闭",
+		"optional": "可选",
+		"retry": "重试"
+	},
+	"navigation": {
+		"back": "后退",
+		"forward": "前进"
+	},
+	"errorBoundary": {
+		"title": "出现错误",
+		"description": "请重启 Agent Orchestrator 后重试。"
+	},
+	"projectAgents": {
+		"workspaceTitle": "工作区 Agent",
+		"projectTitle": "项目 Agent",
+		"close": "关闭项目 Agent 设置",
+		"worker": "执行 Agent",
+		"orchestrator": "编排 Agent",
+		"selectWorker": "选择执行 Agent",
+		"selectOrchestrator": "选择编排 Agent",
+		"loading": "正在加载 Agent…",
+		"cached": "Agent 可用性信息已缓存。",
+		"refresh": "刷新 Agent",
+		"refreshing": "正在刷新…",
+		"gitSetup": "如果此文件夹需要配置 Git，AO 会先初始化仓库并创建首次提交。",
+		"settingUp": "正在配置…",
+		"creating": "正在创建…",
+		"createWorkspace": "创建工作区",
+		"create": "创建并启动",
+		"status": {
+			"needsInstall": "需要安装",
+			"authUnknown": "授权状态未知",
+			"needsAuth": "需要授权"
+		},
+		"errors": {
+			"repoRootTitle": "请选择仓库根目录",
+			"repoRootMessage": "请选择 Git 仓库的根文件夹。",
+			"bareTitle": "暂不支持裸仓库",
+			"bareMessage": "请选择带工作树的仓库。",
+			"invalidGitTitle": "Git 仓库无效",
+			"invalidGitMessage": "AO 校验此仓库时失败。",
+			"setupFailed": "Git 配置失败",
+			"createFailed": "项目创建失败",
+			"tryAgain": "请检查文件夹后重试。",
+			"loadCatalog": "Agent 列表加载失败。",
+			"refreshCatalog": "Agent 列表刷新失败。"
+		}
+	},
+	"intake": {
+		"description": "根据分配的 GitHub Issue 自动创建任务。",
+		"enable": "启用 Issue 接入",
+		"help": "关于 Issue 接入",
+		"tooltip": "AO 会轮询仓库中分配给此账号的开放 Issue。",
+		"repository": "仓库",
+		"repoNotDetected": "未能从 Git 远程地址识别仓库。",
+		"assignee": "负责人",
+		"assigneePlaceholder": "GitHub 用户名",
+		"assigneeRequired": "启用 Issue 接入时必须填写负责人。"
+	},
+	"newTask": {
+		"title": "新建任务",
+		"description": "为此项目启动一个执行会话。",
+		"close": "关闭新建任务窗口",
+		"refreshingAgents": "正在刷新 Agent…",
+		"starting": "正在启动…",
+		"start": "启动任务",
+		"fields": {
+			"title": "标题",
+			"titlePlaceholder": "需要完成什么？",
+			"brief": "任务说明",
+			"briefPlaceholder": "补充背景、约束和验收标准",
+			"agent": "Agent",
+			"projectDefault": "项目默认值",
+			"branch": "分支"
+		},
+		"errors": {
+			"projectUnavailable": "项目配置暂不可用（降级状态）。",
+			"required": "请填写任务标题和任务说明。",
+			"startFailed": "任务启动失败。",
+			"noSession": "守护进程未返回会话。"
+		}
+	},
+	"orchestratorReplacement": {
+		"title": "编排 Agent 替换失败",
+		"description": "项目已保存，但 AO 未能重启编排 Agent。",
+		"openCurrent": "打开当前编排 Agent"
+	},
+	"reportProblem": {
+		"title": "报告问题",
+		"description": "描述问题后，将预填报告复制到你选择的渠道。",
+		"close": "关闭问题报告窗口",
+		"summary": "摘要",
+		"summaryPlaceholder": "简要描述出现的问题",
+		"details": "详细信息",
+		"detailsPlaceholder": "你预期发生什么，实际又发生了什么？",
+		"reportTo": "报告渠道",
+		"destination": "报告渠道",
+		"copied": "已复制 {{destination}} 报告。",
+		"copyFailed": "报告复制失败。",
+		"outputs": {
+			"github": { "label": "GitHub", "destination": "GitHub Issue", "action": "复制 GitHub 报告" },
+			"discord": { "label": "Discord", "destination": "Discord", "action": "复制 Discord 报告" },
+			"email": { "label": "邮件", "destination": "邮件", "action": "复制邮件报告" }
+		}
+	},
+	"keyboardShortcuts": {
+		"title": "键盘快捷键",
+		"description": "Agent Orchestrator 全局可用的快捷键。",
+		"categories": { "general": "常规", "navigation": "导航", "session": "会话" },
+		"items": {
+			"new-session": { "label": "新建会话" },
+			"keyboard-shortcuts": { "label": "显示键盘快捷键" },
+			"toggle-sidebar": { "label": "切换侧边栏" },
+			"open-project": { "label": "打开项目 1–9", "context": "对应项目存在时" },
+			"toggle-inspector": { "label": "切换检查器", "context": "会话视图" }
+		}
+	},
+	"migrationPopup": {
+		"earlierAO": "旧版 AO 安装目录",
+		"title": "是否导入旧版 AO 数据？",
+		"description": "AO 在 <path>{{path}}</path> 找到现有数据，现在可以导入。",
+		"failed": "导入失败：{{error}}",
+		"later": "选择稍后只会在本次启动期间关闭此提示。",
+		"dontMigrate": "不迁移",
+		"skip": "稍后",
+		"proceed": "导入数据"
+	},
+	"projectSettings": {
+		"title": "项目设置",
+		"loading": "正在加载项目设置…",
+		"identity": { "title": "基本信息", "kind": "类型", "workspace": "工作区", "singleRepo": "单仓库" },
+		"workspaceRepos": { "title": "工作区仓库", "empty": "尚未登记子仓库。" },
+		"worktrees": { "title": "工作树", "defaultBranch": "默认分支", "sessionPrefix": "会话前缀" },
+		"agents": {
+			"title": "Agent",
+			"selectWorker": "选择执行 Agent",
+			"defaultWorker": "默认执行 Agent",
+			"selectOrchestrator": "选择编排 Agent",
+			"defaultOrchestrator": "默认编排 Agent",
+			"cached": "Agent 可用性信息已缓存。",
+			"refreshing": "正在刷新…",
+			"refresh": "刷新 Agent",
+			"modelOverride": "指定模型",
+			"agentDefault": "（使用 Agent 默认值）",
+			"permissionMode": "权限模式"
+		},
+		"reviewers": { "title": "审查 Agent", "defaultAgent": "默认审查 Agent" },
+		"trackerIntake": "任务接入",
+		"saving": "正在保存…",
+		"saveChanges": "保存更改",
+		"saved": "已保存。",
+		"restartFailed": "编排 Agent 重启失败：{{error}}",
+		"projectDefault": "项目默认值",
+		"permissionModes": { "default": "默认", "accept-edits": "接受编辑", "auto": "自动", "bypass-permissions": "跳过权限确认" },
+		"errors": {
+			"degraded": "项目配置暂不可用（降级状态）。",
+			"load": "项目加载失败。",
+			"replaceOrchestrator": "编排 Agent 替换失败",
+			"agentsRequired": "必须选择执行 Agent 和编排 Agent。",
+			"assigneeRequired": "启用任务接入时必须填写负责人。",
+			"refreshAgents": "Agent 列表刷新失败。",
+			"save": "保存失败"
+		}
+	},
+	"sessionFiles": {
+		"ariaLabel": "会话文件",
+		"title": "文件",
+		"changed_one": "已更改 {{count}} 个文件",
+		"changed_other": "已更改 {{count}} 个文件",
+		"search": "搜索已更改文件",
+		"refresh": "刷新文件",
+		"minimize": "还原文件面板",
+		"maximize": "最大化文件面板",
+		"close": "关闭文件面板",
+		"review": "审查",
+		"collapseAll": "全部折叠",
+		"expandAll": "全部展开",
+		"loading": "正在加载文件…",
+		"empty": "未发现已更改文件。",
+		"collapseFile": "折叠 {{path}}",
+		"expandFile": "展开 {{path}}",
+		"loadingDiff": "正在加载差异…",
+		"binaryUnavailable": "二进制文件不支持预览。",
+		"diffTruncated": "差异预览已截断。",
+		"noDiff": "与 HEAD 相比没有差异。",
+		"errors": {
+			"loadWorkspace": "工作区文件加载失败",
+			"load": "文件加载失败。",
+			"loadFile": "此文件加载失败。"
+		}
+	},
+	"centerPane": {
+		"terminal": "终端",
+		"noSession": "未选择会话",
+		"orchestrator": "编排 Agent",
+		"decreaseFont": "减小终端字号",
+		"increaseFont": "增大终端字号",
+		"exitFullscreen": "退出终端全屏",
+		"openFullscreen": "终端全屏显示",
+		"exitFullscreenShort": "退出全屏",
+		"fullscreenTerminal": "终端全屏",
+		"backToAgent": "返回 Agent 终端",
+		"agent": "Agent",
+		"reviewer": "审查 Agent"
+	},
+	"browser": {
+		"stop": "停止",
+		"reload": "重新加载",
+		"agentWorking": "Agent 正在工作",
+		"url": "浏览器地址",
+		"returnToPanel": "返回面板",
+		"popOut": "弹出窗口",
+		"empty": "输入网址，或点击终端中的链接。",
+		"annotation": {
+			"pickElement": "选择元素",
+			"queued": "已排队",
+			"queuedCount": "已排队（{{count}}）",
+			"sending": "正在发送",
+			"sent": "已发送",
+			"retry": "重试标注",
+			"cancel": "取消标注",
+			"annotate": "标注页面"
+		},
+		"preview": {
+			"title": "AO 预览",
+			"demoTitle": "演示应用预览",
+			"demoDescription": "执行 Agent 通过以下命令公开了本地 Vite 应用：",
+			"loaded": "已加载",
+			"routes": "路由",
+			"routesValue": "12 项通过",
+			"build": "构建",
+			"ready": "就绪",
+			"latency": "延迟"
+		},
+		"errors": { "startAnnotation": "标注启动失败。" }
+	},
+	"terminal": {
+		"reattaching": "终端连接已断开，正在重新连接…",
+		"error": "终端错误：{{error}}",
+		"connectionFailed": "连接失败",
+		"restoreFailed": "会话恢复失败",
+		"initFailed": "终端未能在当前显卡或驱动上初始化，请重启应用后重试。",
+		"startingSession": "正在启动会话",
+		"preparingOrchestrator": "正在准备编排 Agent 终端。AO 创建工作树并启动 Agent 可能需要一点时间。",
+		"preparingWorker": "正在准备执行 Agent 终端。AO 创建工作树并启动 Agent 可能需要一点时间。",
+		"noSession": "尚未选择会话，请选择一个执行 Agent 以连接终端。",
+		"ariaLabel": "会话终端",
+		"restoreSession": "恢复会话",
+		"ended": {
+			"title": "终端已结束",
+			"restoreMessage": "恢复会话以重新连接实时终端并继续工作。",
+			"reviewerMessage": "此审查终端已结束。请从摘要面板重新运行审查，或切回 Agent 终端。",
+			"processMessage": "终端进程已结束，但会话尚未标记为终止。"
+		}
+	},
+	"sessionInspector": {
+		"ariaLabel": "会话检查器",
+		"loadingSession": "正在加载会话…",
+		"views": { "summary": "摘要", "reviews": "审查", "browser": "浏览器", "files": "文件" },
+		"pullRequest": "拉取请求",
+		"pullRequestsCount": "拉取请求（{{count}}）",
+		"noPullRequest": "尚未创建拉取请求。",
+		"activity": "活动",
+		"overview": "概览",
+		"fields": { "agent": "Agent", "issue": "Issue", "branch": "分支", "started": "开始时间", "session": "会话" },
+		"prStates": { "open": "开放", "draft": "草稿", "merged": "已合并", "closed": "已关闭" },
+		"open": "打开",
+		"timeline": { "created": "已创建工作树和分支", "draft": "草稿", "opened": "已打开", "merged": "已合并", "done": "完成" },
+		"conflict": "存在冲突",
+		"browserInCenter": "浏览器预览正在中央面板中显示。",
+		"filesUnavailable": "此会话没有可用文件。",
+		"openFiles": "打开文件",
+		"reviews": {
+			"loading": "正在加载审查…",
+			"noneStarted": "没有需要启动的审查。",
+			"reviewer": "审查 Agent",
+			"pullRequests": "拉取请求",
+			"noOpen": "没有可供审查的开放拉取请求。",
+			"cancelling": "正在取消…",
+			"cancel": "取消审查",
+			"openTerminal": "打开终端",
+			"rerun": "重新运行审查",
+			"run": "运行审查",
+			"verdict": {
+				"reviewing": "正在审查…",
+				"failed": "失败",
+				"cancelled": "已取消",
+				"changesRequested": "需要修改",
+				"approved": "已批准",
+				"notRun": "尚未运行"
+			},
+			"errors": {
+				"load": "审查加载失败",
+				"start": "审查启动失败",
+				"cancel": "审查取消失败",
+				"request": "审查请求失败"
+			}
+		}
+	},
+	"sessionView": { "notFound": "未找到此会话，它可能已被清理，请从侧边栏选择其他会话。" },
 	"windowTitlebar": {
 		"menu": {
 			"file": "文件",

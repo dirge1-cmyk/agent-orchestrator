@@ -7,6 +7,7 @@ import { apiClient, apiErrorMessage } from "../lib/api-client";
 import { aoBridge } from "../lib/bridge";
 import { migrationOfferQueryKey, useMigrationOffer } from "../hooks/useMigrationOffer";
 import { workspaceQueryKey } from "../hooks/useWorkspaceQuery";
+import { Trans, useTranslation } from "react-i18next";
 
 // MigrationPopup is the first-run legacy-AO import offer. It shows only when the
 // app marker is non-terminal (pending/failed) AND the daemon reports legacy data
@@ -14,6 +15,7 @@ import { workspaceQueryKey } from "../hooks/useWorkspaceQuery";
 // for this launch (re-prompts next launch); Don't Migrate declines permanently
 // (re-runnable later once the Settings entry point lands, issue #2205).
 export function MigrationPopup() {
+	const { t } = useTranslation();
 	const offer = useMigrationOffer();
 	const queryClient = useQueryClient();
 	const [skipped, setSkipped] = useState(false);
@@ -23,7 +25,7 @@ export function MigrationPopup() {
 	const open = (offer.data?.show ?? false) && !skipped;
 	if (!open) return null;
 
-	const legacyRoot = offer.data?.legacyRoot || "your earlier AO";
+	const legacyRoot = offer.data?.legacyRoot || t("migrationPopup.earlierAO");
 	const nowIso = () => new Date().toISOString();
 
 	const proceed = async () => {
@@ -68,29 +70,28 @@ export function MigrationPopup() {
 				<Dialog.Overlay className="fixed inset-0 z-overlay bg-scrim" />
 				<Dialog.Content className="fixed left-1/2 top-1/2 z-overlay w-dialog-lg -translate-x-1/2 -translate-y-1/2 rounded-lg border border-border bg-surface p-5 shadow-lg">
 					<Dialog.Title className="text-sm font-medium text-foreground">
-						Import projects from your earlier AO?
+						{t("migrationPopup.title")}
 					</Dialog.Title>
 					<Dialog.Description className="mt-2 text-control leading-body text-muted-foreground">
-						We found an existing install at <span className="font-mono text-caption text-foreground">{legacyRoot}</span>
-						. Importing brings in your projects. Your old files are never modified, and you can do this later.
+						<Trans i18nKey="migrationPopup.description" values={{ path: legacyRoot }} components={{ path: <span className="font-mono text-caption text-foreground" /> }} />
 					</Dialog.Description>
 					{error && (
 						<div className="mt-3 text-xs text-destructive">
-							Migration failed: {error}. Your legacy projects are untouched (nothing is ever deleted). You can retry.
+							{t("migrationPopup.failed", { error })}
 						</div>
 					)}
-					<p className="mt-3 text-caption text-muted-foreground">You can run this again later.</p>
+					<p className="mt-3 text-caption text-muted-foreground">{t("migrationPopup.later")}</p>
 					<div className="mt-4 flex items-center justify-between gap-2">
 						<Button variant="ghost" className="text-destructive" onClick={dontMigrate} disabled={busy} type="button">
-							Don't Migrate
+							{t("migrationPopup.dontMigrate")}
 						</Button>
 						<div className="flex gap-2">
 							<Button variant="ghost" onClick={() => setSkipped(true)} disabled={busy} type="button">
-								Skip
+								{t("migrationPopup.skip")}
 							</Button>
 							<Button variant="primary" onClick={proceed} disabled={busy} type="button">
 								{busy && <Loader2 className="mr-2 size-icon-base animate-spin" />}
-								{error ? "Retry" : "Proceed"}
+								{t(error ? "common.retry" : "migrationPopup.proceed")}
 							</Button>
 						</div>
 					</div>

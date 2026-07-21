@@ -81,6 +81,12 @@
 		"nightly": "Nightly",
 		"feedback": "Feedback",
 		"toggle": "Toggle Sidebar",
+		"mobile": { "title": "Sidebar", "description": "Displays the mobile sidebar." },
+		"update": {
+			"install": "Restart to install update{{version}}",
+			"restart": "Restart to update",
+			"versionReady": "v{{version}} ready"
+		},
 
 		"tooltips": {
 			"board": "Orchestrator board",
@@ -99,6 +105,7 @@
 		},
 
 		"menu": {
+			"newSession": "New session",
 			"lightMode": "Light mode",
 			"darkMode": "Dark mode",
 			"pullRequests": "Pull requests",
@@ -367,6 +374,309 @@
 		"switchToEnglish": "Switch to English",
 		"switchToChinese": "Switch to Simplified Chinese"
 	},
+	"common": {
+		"breadcrumb": "Breadcrumb",
+		"cancel": "Cancel",
+		"close": "Close",
+		"optional": "Optional",
+		"retry": "Retry"
+	},
+	"navigation": {
+		"back": "Back",
+		"forward": "Forward"
+	},
+	"errorBoundary": {
+		"title": "Something went wrong",
+		"description": "Restart Agent Orchestrator and try again."
+	},
+	"projectAgents": {
+		"workspaceTitle": "Workspace agents",
+		"projectTitle": "Project agents",
+		"close": "Close project agents dialog",
+		"worker": "Worker agent",
+		"orchestrator": "Orchestrator agent",
+		"selectWorker": "Select worker agent",
+		"selectOrchestrator": "Select orchestrator agent",
+		"loading": "Loading agents...",
+		"cached": "Agent availability is cached.",
+		"refresh": "Refresh agents",
+		"refreshing": "Refreshing...",
+		"gitSetup": "If this folder needs Git setup, AO will initialize it and create the first commit before starting.",
+		"settingUp": "Setting up...",
+		"creating": "Creating...",
+		"createWorkspace": "Create workspace and start",
+		"create": "Create and start",
+		"status": {
+			"needsInstall": "Needs install",
+			"authUnknown": "Auth unknown",
+			"needsAuth": "Needs auth"
+		},
+		"errors": {
+			"repoRootTitle": "Select the repository root",
+			"repoRootMessage": "This folder is inside another Git repository. Choose the top-level folder and try again.",
+			"bareTitle": "Choose a normal checkout",
+			"bareMessage": "AO needs a regular working folder, not a bare Git repository.",
+			"invalidGitTitle": "Choose a valid Git folder",
+			"invalidGitMessage": "AO could not read the Git metadata here. Repair the repository or choose a plain folder.",
+			"setupFailed": "Repository setup failed",
+			"createFailed": "Could not create project",
+			"tryAgain": "Try again, or choose a different folder.",
+			"loadCatalog": "Could not load agent catalog.",
+			"refreshCatalog": "Could not refresh agent catalog."
+		}
+	},
+	"intake": {
+		"description": "Auto-spawn worker sessions from matching tracker issues.",
+		"enable": "Enable issue intake",
+		"help": "What does enabling issue intake do?",
+		"tooltip": "Auto-spawns a worker session for each matching GitHub issue.",
+		"repository": "Repository",
+		"repoNotDetected": "Could not detect a GitHub repo from this project's git origin.",
+		"assignee": "Assignee",
+		"assigneePlaceholder": "type username or * for any",
+		"assigneeRequired": "Enabling intake requires an assignee."
+	},
+	"newTask": {
+		"title": "New task",
+		"description": "Start a worker directly from this project.",
+		"close": "Close new task dialog",
+		"refreshingAgents": "Refreshing agents...",
+		"starting": "Starting...",
+		"start": "Start task",
+		"fields": {
+			"title": "Title",
+			"titlePlaceholder": "Fix WebGL fallback renderer",
+			"brief": "Brief",
+			"briefPlaceholder": "Describe the change, constraints, and expected verification.",
+			"agent": "Agent",
+			"projectDefault": "Project default",
+			"branch": "Branch"
+		},
+		"errors": {
+			"projectUnavailable": "Project config is unavailable.",
+			"required": "Title and brief are required.",
+			"startFailed": "Unable to start task",
+			"noSession": "Task creation returned no session"
+		}
+	},
+	"orchestratorReplacement": {
+		"title": "Orchestrator replacement failed",
+		"description": "The project was saved, but AO could not restart the orchestrator.",
+		"openCurrent": "Open current orchestrator"
+	},
+	"reportProblem": {
+		"title": "Report a problem",
+		"description": "Write a short note, then copy it to GitHub, Discord, or email.",
+		"close": "Close report dialog",
+		"summary": "Summary",
+		"summaryPlaceholder": "Brief title",
+		"details": "Details",
+		"detailsPlaceholder": "Share what happened, what you want, or what you need help with.",
+		"reportTo": "Report to",
+		"destination": "Report destination",
+		"copied": "{{destination}} draft copied.",
+		"copyFailed": "Could not copy report draft",
+		"outputs": {
+			"github": { "label": "GitHub", "destination": "GitHub issue", "action": "Copy and raise GitHub issue" },
+			"discord": { "label": "Discord", "destination": "Discord", "action": "Copy and open Discord" },
+			"email": { "label": "Email", "destination": "Email support", "action": "Copy and open email" }
+		}
+	},
+	"keyboardShortcuts": {
+		"title": "Keyboard shortcuts",
+		"description": "Application-wide shortcuts available in Agent Orchestrator.",
+		"categories": { "general": "General", "navigation": "Navigation", "session": "Session" },
+		"items": {
+			"new-session": { "label": "New session" },
+			"keyboard-shortcuts": { "label": "Show keyboard shortcuts" },
+			"toggle-sidebar": { "label": "Toggle sidebar" },
+			"open-project": { "label": "Open project 1–9", "context": "When that project exists" },
+			"toggle-inspector": { "label": "Toggle inspector", "context": "Session view" }
+		}
+	},
+	"migrationPopup": {
+		"earlierAO": "your earlier AO",
+		"title": "Import projects from your earlier AO?",
+		"description": "We found an existing install at <path>{{path}}</path>. Importing brings in your projects. Your old files are never modified, and you can do this later.",
+		"failed": "Migration failed: {{error}}. Your legacy projects are untouched (nothing is ever deleted). You can retry.",
+		"later": "You can run this again later.",
+		"dontMigrate": "Don't Migrate",
+		"skip": "Skip",
+		"proceed": "Proceed"
+	},
+	"projectSettings": {
+		"title": "Settings",
+		"loading": "Loading project settings…",
+		"identity": { "title": "Identity", "kind": "kind", "workspace": "workspace", "singleRepo": "single repo" },
+		"workspaceRepos": { "title": "Workspace repos", "empty": "No child repositories are registered." },
+		"worktrees": { "title": "Worktrees", "defaultBranch": "Default branch", "sessionPrefix": "Session prefix" },
+		"agents": {
+			"title": "Agents",
+			"selectWorker": "Select worker agent",
+			"defaultWorker": "Default worker agent",
+			"selectOrchestrator": "Select orchestrator agent",
+			"defaultOrchestrator": "Default orchestrator agent",
+			"cached": "Agent availability is cached.",
+			"refreshing": "Refreshing...",
+			"refresh": "Refresh agents",
+			"modelOverride": "Model override",
+			"agentDefault": "(agent default)",
+			"permissionMode": "Permission mode"
+		},
+		"reviewers": { "title": "Reviewers", "defaultAgent": "Default reviewer agent" },
+		"trackerIntake": "Tracker intake",
+		"saving": "Saving…",
+		"saveChanges": "Save changes",
+		"saved": "Saved.",
+		"restartFailed": "Orchestrator restart failed: {{error}}",
+		"projectDefault": "Project default",
+		"permissionModes": { "default": "Default", "accept-edits": "Accept edits", "auto": "Auto", "bypass-permissions": "Bypass permissions" },
+		"errors": {
+			"degraded": "Project config is unavailable (degraded).",
+			"load": "Could not load project.",
+			"replaceOrchestrator": "Could not replace orchestrator",
+			"agentsRequired": "Worker and orchestrator agents are required.",
+			"assigneeRequired": "Enabling intake requires an assignee.",
+			"refreshAgents": "Could not refresh agent catalog.",
+			"save": "Save failed"
+		}
+	},
+	"sessionFiles": {
+		"ariaLabel": "Session files",
+		"title": "Files",
+		"changed_one": "{{count}} file changed",
+		"changed_other": "{{count}} files changed",
+		"search": "Search changed files",
+		"refresh": "Refresh files",
+		"minimize": "Minimize files",
+		"maximize": "Maximize files",
+		"close": "Close files",
+		"review": "Review",
+		"collapseAll": "Collapse all",
+		"expandAll": "Expand all",
+		"loading": "Loading files...",
+		"empty": "No changed files found.",
+		"collapseFile": "Collapse {{path}}",
+		"expandFile": "Expand {{path}}",
+		"loadingDiff": "Loading diff...",
+		"binaryUnavailable": "Binary file preview is not available.",
+		"diffTruncated": "Diff preview truncated.",
+		"noDiff": "No diff against HEAD.",
+		"errors": {
+			"loadWorkspace": "Unable to load workspace files",
+			"load": "Unable to load files.",
+			"loadFile": "Unable to load this file."
+		}
+	},
+	"centerPane": {
+		"terminal": "TERMINAL",
+		"noSession": "No session",
+		"orchestrator": "Orchestrator",
+		"decreaseFont": "Decrease terminal font size",
+		"increaseFont": "Increase terminal font size",
+		"exitFullscreen": "Exit terminal fullscreen",
+		"openFullscreen": "Open terminal fullscreen",
+		"exitFullscreenShort": "Exit fullscreen",
+		"fullscreenTerminal": "Fullscreen terminal",
+		"backToAgent": "Back to agent terminal",
+		"agent": "agent",
+		"reviewer": "Reviewer"
+	},
+	"browser": {
+		"stop": "Stop",
+		"reload": "Reload",
+		"agentWorking": "Agent working",
+		"url": "Browser URL",
+		"returnToPanel": "Return to panel",
+		"popOut": "Pop out",
+		"empty": "Enter a URL or click one in the terminal.",
+		"annotation": {
+			"pickElement": "Pick element",
+			"queued": "Queued",
+			"queuedCount": "Queued ({{count}})",
+			"sending": "Sending",
+			"sent": "Sent",
+			"retry": "Retry annotation",
+			"cancel": "Cancel annotation",
+			"annotate": "Annotate page"
+		},
+		"preview": {
+			"title": "AO Preview",
+			"demoTitle": "Demo app preview",
+			"demoDescription": "The worker exposed a local Vite app with",
+			"loaded": "Loaded",
+			"routes": "Routes",
+			"routesValue": "12 passing",
+			"build": "Build",
+			"ready": "ready",
+			"latency": "Latency"
+		},
+		"errors": { "startAnnotation": "Unable to start annotation." }
+	},
+	"terminal": {
+		"reattaching": "Terminal disconnected — reattaching…",
+		"error": "Terminal error: {{error}}",
+		"connectionFailed": "connection failed",
+		"restoreFailed": "Unable to restore session",
+		"initFailed": "Terminal failed to initialize on this GPU/driver. Restart the app to retry.",
+		"startingSession": "Starting session",
+		"preparingOrchestrator": "Preparing the orchestrator terminal. This can take a moment while AO creates the worktree and starts the agent.",
+		"preparingWorker": "Preparing the worker terminal. This can take a moment while AO creates the worktree and starts the agent.",
+		"noSession": "No session selected. Pick a worker to attach its terminal.",
+		"ariaLabel": "Session terminal",
+		"restoreSession": "Restore session",
+		"ended": {
+			"title": "Terminal ended",
+			"restoreMessage": "Restore the session to attach a live terminal and continue writing.",
+			"reviewerMessage": "This reviewer terminal has ended. Re-run review from the summary panel, or switch back to the agent terminal.",
+			"processMessage": "This terminal process ended, but the session is not marked terminated yet."
+		}
+	},
+	"sessionInspector": {
+		"ariaLabel": "Session inspector",
+		"loadingSession": "Loading session…",
+		"views": { "summary": "Summary", "reviews": "Reviews", "browser": "Browser", "files": "Files" },
+		"pullRequest": "Pull request",
+		"pullRequestsCount": "Pull requests ({{count}})",
+		"noPullRequest": "No pull request opened yet.",
+		"activity": "Activity",
+		"overview": "Overview",
+		"fields": { "agent": "Agent", "issue": "Issue", "branch": "Branch", "started": "Started", "session": "Session" },
+		"prStates": { "open": "open", "draft": "draft", "merged": "merged", "closed": "closed" },
+		"open": "Open",
+		"timeline": { "created": "Created worktree & branch", "draft": "Draft", "opened": "Opened", "merged": "Merged", "done": "Done" },
+		"conflict": "Conflict",
+		"browserInCenter": "Browser preview is in the center pane.",
+		"filesUnavailable": "Files are not available for this session.",
+		"openFiles": "Open files",
+		"reviews": {
+			"loading": "Loading reviews...",
+			"noneStarted": "No needed reviews were started.",
+			"reviewer": "reviewer",
+			"pullRequests": "Pull requests",
+			"noOpen": "No open pull requests to review.",
+			"cancelling": "Cancelling...",
+			"cancel": "Cancel review",
+			"openTerminal": "Open terminal",
+			"rerun": "Re-run review",
+			"run": "Run review",
+			"verdict": {
+				"reviewing": "Reviewing...",
+				"failed": "Failed",
+				"cancelled": "Cancelled",
+				"changesRequested": "Changes requested",
+				"approved": "Approved",
+				"notRun": "Not run"
+			},
+			"errors": {
+				"load": "Unable to load reviews",
+				"start": "Unable to start review",
+				"cancel": "Unable to cancel review",
+				"request": "Review request failed"
+			}
+		}
+	},
+	"sessionView": { "notFound": "Session not found. It may have been cleaned up — pick another from the sidebar." },
 	"windowTitlebar": {
 		"menu": {
 			"file": "File",
